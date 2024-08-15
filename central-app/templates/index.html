@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Session Manager</title>
+</head>
+<body>
+    <button onclick="triggerNodes()">Trigger Nodes</button>
+    <button onclick="sayHello()">Say Hello</button> <!-- Added a new button -->
+    <script>
+        function triggerNodes() {
+            fetch('/trigger-nodes', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error('Error:', error));
+        }
+
+        function sayHello() {
+            console.log("Hello"); // Logs 'Hello' to the browser console
+            alert("Hello"); // Displays 'Hello' in an alert dialog box
+        }
+    </script>
+</body>
+</html>
