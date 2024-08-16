@@ -1,13 +1,14 @@
-FROM python:3.9-slim
 
-# Install curl
-RUN apt-get update && apt-get install -y curl
-RUN apt-get update && apt-get install -y net-tools
-
-
+FROM python:3.8
 WORKDIR /app
-COPY . /app
-
-RUN pip install --no-cache-dir -r requirements.txt
-EXPOSE 5000
-CMD ["python", "app.py"]
+ # Install system dependencies in one layer to keep it clean and efficient
+RUN apt-get update && apt-get install -y \
+curl \
+net-tools \
+iputils-ping \
+&& rm -rf /var/lib/apt/lists/*
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["flask", "run", "--host=0.0.0.0", "--port=8000"]
+ 
