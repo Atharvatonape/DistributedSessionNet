@@ -3,7 +3,7 @@ services:
   central-app:
     build: ./central-app  # This will build the image from the Dockerfile in the central-app directory
     ports:
-      - "8000:5000"       # Maps port 5000 in the container to port 5000 on the host
+      - "5173:8000"       # Maps port 5000 in the container to port 5000 on the host
     networks:
       - session-network    # Attaches the service to the custom Docker network
 
@@ -23,29 +23,29 @@ services:
       - session-network
     container_name: second-node
 
-  third-node:
-    build: ./node-app
-    ports:
-      - "5003:5000"
-    networks:
-      - session-network
-    container_name: third-node
+  # third-node:
+  #   build: ./node-app
+  #   ports:
+  #     - "5003:5000"
+  #   networks:
+  #     - session-network
+  #   container_name: third-node
 
-  fourth-node:
-    build: ./node-app
-    ports:
-      - "5004:5000"
-    networks:
-      - session-network
-    container_name: fourth-node
+  # fourth-node:
+  #   build: ./node-app
+  #   ports:
+  #     - "5004:5000"
+  #   networks:
+  #     - session-network
+  #   container_name: fourth-node
 
-  fifth-node:
-    build: ./node-app
-    ports:
-      - "5005:5000"
-    networks:
-      - session-network
-    container_name: fifth-node
+  # fifth-node:
+  #   build: ./node-app
+  #   ports:
+  #     - "5005:5000"
+  #   networks:
+  #     - session-network
+  #   container_name: fifth-node
 
   # Add more nodes as needed with different host port mappings
 

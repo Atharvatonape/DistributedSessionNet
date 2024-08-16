@@ -1,40 +1,28 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import sqlite3
 import uuid
+import logging
+from utils.get_database import create_sqlite_database, connect_database, insert_session
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+app.logger.setLevel(logging.INFO)
 
-DATABASE = 'node_session.db'
-
-def get_db():
-    db = sqlite3.connect(DATABASE)
-    db.row_factory = sqlite3.Row
-    return db
+@app.route('/')
+def index():
+    create_sqlite_database('datab.db')
+    return render_template('index.html')
 
 @app.route('/session', methods=['POST'])
-def create_session():
-    try:
-        data = request.get_json()
-        if 'user_data' not in data:
-            return jsonify({"error": "Missing user_data"}), 400
-        session_id = str(uuid.uuid4())
-        # Simulate storing session data or other processing
-        return jsonify({"message": "Session created", "session_id": session_id}), 201
-    except Exception as e:
-        app.logger.error(f"Error: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
+def handle_session():
+    data = request.get_json()
+    app.logger.info(f"Received data: {data}")  # Log received data to terminal # Print received data to terminal
+    conn = connect_database('datab.db')
+    session_id = uuid.uuid4().hex
+    insert_session(conn, data, session_id)
+    # Return a dummy JSON response for now
+    return jsonify({"message": "Data received", "status": "Success"}, data), 200
 
-
-# @app.route('/session', methods=['POST'])
-# def create_session():
-#     session_id = str(uuid.uuid4())
-#     user_data = request.json['user_data']
-
-#     db = get_db()
-#     db.execute('INSERT INTO sessions (id, data, active) VALUES (?, ?, ?)',
-#                [session_id, user_data, 1])
-#     db.commit()
-#     return jsonify({"message": "Session created", "session_id": session_id})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
