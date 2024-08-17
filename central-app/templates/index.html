@@ -5,19 +5,56 @@
 </head>
 <body>
     <h1>Flask Application</h1>
+
+    <!-- Form to set the number of nodes -->
+    <div>
+        <label for="numNodes">Enter number of nodes:</label>
+        <input type="number" id="numNodes" name="numNodes" min="1" max="100" placeholder="Number of nodes">
+        <button onclick="setNodes()">Set Nodes</button>
+    </div>
+    <div id="setNodesResult"></div>  <!-- Display results for setting nodes -->
+
+    <!-- Button to trigger nodes based on the number set -->
     <button onclick="triggerNodes()">Trigger Nodes</button>
+    <div id="triggerNodesResult"></div>  <!-- Display results for triggering nodes -->
 
     <script>
+        function setNodes() {
+            var numNodes = document.getElementById('numNodes').value;
+            fetch('/set_nodes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ num_nodes: numNodes })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('setNodesResult').textContent = 'Set Nodes Response: ' + JSON.stringify(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('setNodesResult').textContent = 'Error setting nodes: ' + error;
+            });
+        }
+
         function triggerNodes() {
+            var numNodes = document.getElementById('numNodes').value; // Get the value for number of nodes again
             fetch('/trigger_nodes', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({ num_nodes: numNodes }) // Send the number as part of the request
             })
             .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error('Error:', error));
+            .then(data => {
+                document.getElementById('triggerNodesResult').innerHTML = 'Trigger Nodes Response: <pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('triggerNodesResult').textContent = 'Error triggering nodes: ' + error;
+            });
         }
     </script>
 </body>
