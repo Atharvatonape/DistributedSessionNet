@@ -12,6 +12,8 @@ services:
     environment:
       - FLASK_APP=app.py
       - FLASK_RUN_HOST=0.0.0.0
+    networks:
+      - session-net
 
   worker:
     build:
@@ -21,4 +23,9 @@ services:
       - "8110:8110"
     volumes:
       - ./node-app:/app
+    networks:
+      - session-net
 
+networks:
+  session-net:
+    driver: bridge

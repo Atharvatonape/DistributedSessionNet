@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Workers</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+            socket.on('update', function(data) {
+                var node = document.createElement("p");
+                var textnode = document.createTextNode(data.message);
+                node.appendChild(textnode);
+                document.getElementById("status").appendChild(node);
+            });
+
+            document.getElementById('startButton').onclick = function() {
+                socket.emit('start_create_workers', {num_workers: 2}); // You can modify to accept user input
+            };
+        });
+    </script>
+</head>
+<body>
+    <h1>Create Workers</h1>
+    <button id="startButton">Start Creating Workers</button>
+    <div id="status"></div>
+</body>
+</html>
