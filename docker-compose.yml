@@ -15,16 +15,16 @@ services:
     networks:
       - session-net
 
-  worker:
-    build:
-      context: ./node-app
-      dockerfile: Dockerfile.worker
-    ports:
-      - "8110:8110"
-    volumes:
-      - ./node-app:/app
-    networks:
-      - session-net
+  # worker:
+  #   build:
+  #     context: ./node-app
+  #     dockerfile: Dockerfile.worker
+  #   ports:
+  #     - "8110:8110"
+  #   volumes:
+  #     - ./node-app:/app
+  #   networks:
+  #     - session-net
 
 networks:
   session-net:

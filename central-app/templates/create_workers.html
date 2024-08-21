@@ -2,28 +2,109 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Workers</title>
+    <title>Create and Manage Workers</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
             socket.on('update', function(data) {
-                var node = document.createElement("p");
-                var textnode = document.createTextNode(data.message);
-                node.appendChild(textnode);
-                document.getElementById("status").appendChild(node);
+                document.getElementById("statusMessage").textContent = data.message;
+                if (data.message.includes('created') || data.message.includes('killed')) {
+                    loadWorkers();
+                }
             });
 
             document.getElementById('startButton').onclick = function() {
-                socket.emit('start_create_workers', {num_workers: 2}); // You can modify to accept user input
+                var numWorkers = document.getElementById('numWorkersSelect').value;
+                socket.emit('start_create_workers', {num_workers: parseInt(numWorkers, 10)});
             };
+
+            document.getElementById('killButton').onclick = function() {
+                var selectedWorker = document.getElementById('workerSelect').value;
+                if (selectedWorker === "Select All") {
+                    socket.emit('kill_all_workers');
+                } else {
+                    socket.emit('kill_worker', {worker_name: selectedWorker});
+                }
+            };
+
+            document.getElementById('refreshButton').onclick = function() {
+                loadWorkers();
+            };
+
+            document.getElementById('getStatusButton').onclick = function() {
+                fetchWorkerStatus();
+            };
+
+            function loadWorkers() {
+                $.getJSON('/workers_get', function(workers) {
+                    var select = document.getElementById('workerSelect');
+                    var workerList = document.getElementById('activeWorkers');
+                    select.innerHTML = '<option>Select All</option>';
+                    workerList.innerHTML = '<h3>Active Workers</h3><ul>';
+
+                    workers.forEach(function(worker) {
+                        var option = new Option(worker, worker);
+                        select.add(option);
+                        workerList.innerHTML += `<li>${worker}</li>`;
+                    });
+
+                    workerList.innerHTML += '</ul>';
+                });
+            }
+
+            function fetchWorkerStatus() {
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`workerStatus${i}`).innerHTML = 'Loading...';
+                }
+
+                $.getJSON('/workers', function(workers) {
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= workers.length) {
+                            let url = workers[i - 1];
+                            $.get(url + '/status', function(status) {
+                                let content = `<div class='worker-info'>
+                                                   <p><strong>Name:</strong> ${status.name}</p>
+                                                   <p><strong>Active:</strong> ${status.active ? 'Yes' : 'No'}</p>
+                                                   <p><strong>Requests Handled:</strong> ${status.requests_handled}</p>
+                                                   <p><strong>Last Request:</strong> ${status.latest_request}</p>
+                                               </div>`;
+                                document.getElementById(`workerStatus${i}`).innerHTML = content;
+                            }).fail(function() {
+                                document.getElementById(`workerStatus${i}`).innerHTML = 'Failed to load data';
+                            });
+                        } else {
+                            document.getElementById(`workerStatus${i}`).innerHTML = 'No active worker';
+                        }
+                    }
+                });
+            }
         });
     </script>
 </head>
 <body>
-    <h1>Create Workers</h1>
-    <button id="startButton">Start Creating Workers</button>
-    <div id="status"></div>
+    <h1>Worker Creation and Management</h1>
+    <select id="numWorkersSelect">
+        <option value="1">1 Worker</option>
+        <option value="2">2 Workers</option>
+        <option value="3">3 Workers</option>
+        <option value="4">4 Workers</option>
+        <option value="5">5 Workers</option>
+    </select>
+    <button id="startButton">Create Workers</button>
+    <button id="killButton">Kill Selected Worker</button>
+    <button id="refreshButton">Refresh Active Containers</button>
+    <button id="getStatusButton">Get Worker Status</button>
+    <select id="workerSelect"><option>Select All</option></select>
+    <p id="statusMessage">Ready to create or kill workers.</p>
+    <div id="activeWorkers"></div>
+    <div id="workerStatus1" class="worker-status">No active worker</div>
+    <div id="workerStatus2" class="worker-status">No active worker</div>
+    <div id="workerStatus3" class="worker-status">No active worker</div>
+    <div id="workerStatus4" class="worker-status">No active worker</div>
+    <div id="workerStatus5" class="worker-status">No active worker</div>
 </body>
 </html>
