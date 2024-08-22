@@ -1,0 +1,83 @@
+/* General body styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern, readable font */
+    margin: 20px;
+    background-color: #f9f9f9; /* Lighter background for better contrast */
+    color: #333; /* Darker text for better readability */
+}
+
+/* Headings */
+h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Buttons and Select dropdown styling */
+select, button {
+    margin: 10px 5px; /* Uniform margin */
+    padding: 10px 15px; /* Comfortable padding */
+    border-radius: 5px; /* Rounded corners */
+    border: 1px solid #ccc; /* Subtle border */
+    background-color: #5c67f2;
+    color: white;
+    font-size: 16px; /* Larger font size */
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #4a54e1; /* Darker on hover */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Subtle shadow for depth */
+}
+
+select {
+    background-color: white;
+    color: #333;
+}
+
+/* Container for worker status with improved spacing and scrolling */
+.worker-status-container {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    overflow-x: auto;
+    margin-top: 20px; /* Added space above */
+}
+
+.worker-status {
+    flex: 0 0 auto;
+    min-width: 250px; /* Slightly wider boxes for better layout */
+    margin: 5px;
+    padding: 15px; /* More padding for better text visibility */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #ffffff; /* White background for contrast */
+    min-height: 150px; /* Taller boxes to fit content */
+    box-sizing: border-box; /* Ensures padding does not add to width */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Soft shadow for depth */
+}
+
+/* Highlighting active status */
+.active-yes {
+    color: green; /* Green for active */
+}
+
+.active-no {
+    color: red; /* Red for inactive */
+}
+
+/* Additional styles for better list visualization */
+#activeWorkers ul {
+    list-style-type: none; /* No bullets */
+    padding: 0;
+}
+
+#activeWorkers li {
+    padding: 8px;
+    border-bottom: 1px solid #eee; /* Subtle separators */
+}
+
+#activeWorkers li:last-child {
+    border-bottom: none; /* No border for the last item */
+}

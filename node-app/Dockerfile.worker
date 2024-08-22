@@ -21,3 +21,5 @@ ENV FLASK_RUN_PORT=8110
 
 # Command to run the app
 CMD ["flask", "run"]
+
+# docker build -f Dockerfile.worker -t worker_image .

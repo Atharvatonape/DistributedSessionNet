@@ -4,24 +4,43 @@ import os
 import requests
 import socket
 from flask_cors import CORS
+import logging
+
 
 
 app = Flask(__name__)
+app.logger.setLevel(logging.INFO)
+
 CORS(app)
+
+latest_request_name = None
+count = 0
 
 @app.route('/')
 def index():
     return "Welcome to the Worker App my dear!"
 
+@app.route('/receive_data', methods=['POST'])
+def receive_data():
+    global latest_request_name, count
+    data = request.json
+    # Log the incoming data using app.logger
+    app.logger.info(f"Received data: {data}")
+    if 'name' in data:
+        latest_request_name = data['name']
+        count += 1
+
+    return jsonify({"received": True, "data": data})
+
 
 @app.route('/status', methods=['GET'])
 def status():
-    # Example data structure for worker status
+    global latest_request_name, count
     status_data = {
         'name': socket.gethostname(),
         'active': True,
-        'requests_handled': get_requests_count(),
-        'latest_request': "Example request"
+        'requests_handled': count,
+        'latest_request': latest_request_name if latest_request_name else "No request received yet"
     }
     return jsonify(status_data)
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Create and Manage Workers</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -39,6 +39,21 @@
                 fetchWorkerStatus();
             };
 
+            document.getElementById('sendFakeDataButton').onclick = function() {
+
+                // Request the backend to generate fake data and send it to the worker
+                $.post('/send_fake_data', function(response) {
+                    console.log('Response from server:', response);
+                    document.getElementById("statusMessage").textContent = "Fake data sent to " + response.worker;
+                    fetchWorkerStatus();
+                }).fail(function() {
+                    alert("Failed to send fake data.");
+                });
+            };
+
+
+
+
             function loadWorkers() {
                 $.getJSON('/workers_get', function(workers) {
                     var select = document.getElementById('workerSelect');
@@ -66,10 +81,14 @@
                         if (i <= workers.length) {
                             let url = workers[i - 1];
                             $.get(url + '/status', function(status) {
+
+                                let requestsHandled = status.requests_handled || 0;
+                                let totalRequests = 100;
+
                                 let content = `<div class='worker-info'>
                                                    <p><strong>Name:</strong> ${status.name}</p>
                                                    <p><strong>Active:</strong> ${status.active ? 'Yes' : 'No'}</p>
-                                                   <p><strong>Requests Handled:</strong> ${status.requests_handled}</p>
+                                                   <p><strong>Requests Handled:</strong> ${status.requests_handled} / ${totalRequests}</p>
                                                    <p><strong>Last Request:</strong> ${status.latest_request}</p>
                                                </div>`;
                                 document.getElementById(`workerStatus${i}`).innerHTML = content;
@@ -95,16 +114,19 @@
         <option value="5">5 Workers</option>
     </select>
     <button id="startButton">Create Workers</button>
-    <button id="killButton">Kill Selected Worker</button>
     <button id="refreshButton">Refresh Active Containers</button>
     <button id="getStatusButton">Get Worker Status</button>
+    <button id="sendFakeDataButton">Send Fake Data to Node</button>
+    <button id="killButton">Kill Selected Worker</button>
     <select id="workerSelect"><option>Select All</option></select>
     <p id="statusMessage">Ready to create or kill workers.</p>
     <div id="activeWorkers"></div>
-    <div id="workerStatus1" class="worker-status">No active worker</div>
-    <div id="workerStatus2" class="worker-status">No active worker</div>
-    <div id="workerStatus3" class="worker-status">No active worker</div>
-    <div id="workerStatus4" class="worker-status">No active worker</div>
-    <div id="workerStatus5" class="worker-status">No active worker</div>
+    <div class="worker-status-container">
+        <div id="workerStatus1" class="worker-status">No active worker</div>
+        <div id="workerStatus2" class="worker-status">No active worker</div>
+        <div id="workerStatus3" class="worker-status">No active worker</div>
+        <div id="workerStatus4" class="worker-status">No active worker</div>
+        <div id="workerStatus5" class="worker-status">No active worker</div>
+    </div>
 </body>
 </html>

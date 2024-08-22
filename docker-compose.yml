@@ -1,4 +1,5 @@
-version: '3'
+version: '3.8'
+
 services:
   central:
     build:
@@ -8,24 +9,15 @@ services:
       - "7110:7110"
     volumes:
       - ./central-app:/app
-      - /var/run/docker.sock:/var/run/docker.sock  # Mount the Docker socket
+      - /var/run/docker.sock:/var/run/docker.sock  # Allows Docker API access from the container
+    networks:
+      - abc-net
     environment:
       - FLASK_APP=app.py
       - FLASK_RUN_HOST=0.0.0.0
-    networks:
-      - session-net
-
-  # worker:
-  #   build:
-  #     context: ./node-app
-  #     dockerfile: Dockerfile.worker
-  #   ports:
-  #     - "8110:8110"
-  #   volumes:
-  #     - ./node-app:/app
-  #   networks:
-  #     - session-net
+      - FLASK_RUN_PORT=7110
 
 networks:
-  session-net:
+  abc-net:
     driver: bridge
+    external: true

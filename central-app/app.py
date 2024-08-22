@@ -2,6 +2,10 @@ from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 import docker
 from utils.docker_containers import get_running_container_names, get_urls_of_running_containers
+from utils.fake_data import fake_data_gen
+from load_balancing import round_robin
+import requests
+
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -34,7 +38,9 @@ def handle_create_workers(data):
             detach=True,
             ports={'8110/tcp': port},
             environment={'NODE_ID': f'node_{i+1}', 'PORT': '8110'},
-            name=container_name
+            name=container_name,
+            network='abc-net',
+            labels={'com.docker.compose.project': "session-management"}
         )
         workers[container_name] = f'http://localhost:{port}'
         emit('update', {'message': f'{container_name} created at http://localhost:{port}'}, broadcast=True)
@@ -75,6 +81,25 @@ def workers():
 @app.route('/workers_get')
 def list_workers():
     return jsonify(get_running_container_names())
+
+
+@app.route('/send_fake_data', methods=['POST'])
+def send_fake_data():
+    try:
+        worker = round_robin()
+        fake_data = fake_data_gen()
+        worker_url = worker
+        response = requests.post(f'http://{worker_url}:8110/receive_data', json=fake_data)
+        if response.status_code != 200:
+            return jsonify({"success": False, "message": "Failed to send fake data."}), 500
+
+        # If all data was sent successfully, return the worker's name
+        return jsonify({"success": True, "message": "Fake data sent successfully.", "worker": worker_url})
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 
 
 if __name__ == '__main__':
