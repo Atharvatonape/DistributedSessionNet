@@ -15,6 +15,7 @@ CORS(app)
 
 latest_request_name = None
 count = 0
+status_worker = True
 
 @app.route('/')
 def index():
@@ -22,23 +23,38 @@ def index():
 
 @app.route('/receive_data', methods=['POST'])
 def receive_data():
-    global latest_request_name, count
-    data = request.json
-    # Log the incoming data using app.logger
-    app.logger.info(f"Received data: {data}")
-    if 'name' in data:
-        latest_request_name = data['name']
-        count += 1
+    global latest_request_name, count, status_worker
+    if status_worker:
+        data = request.json
+        # Log the incoming data using app.logger
+        app.logger.info(f"Received data: {data}")
 
-    return jsonify({"received": True, "data": data})
+        if 'name' in data:
+            latest_request_name = data['name']
+            count += 1
 
+        if count >= 2:
+            status_worker = False
+
+        status_data = {
+        'worker_id': socket.gethostname(),
+        'state': status_worker,
+        }
+
+        response = requests.post('http://session-management-central-1:7110/update_status', json=status_data)
+        app.logger.info(f"Response from central app: {response.json()}")
+        return jsonify({"received": True, "data": data})
+    else:
+        return jsonify({"received": False, "message": "Worker is not active"})
 
 @app.route('/status', methods=['GET'])
 def status():
-    global latest_request_name, count
+    global latest_request_name, count, status_worker
+    if count >= 2:
+        status_worker = False
     status_data = {
         'name': socket.gethostname(),
-        'active': True,
+        'active': status_worker,
         'requests_handled': count,
         'latest_request': latest_request_name if latest_request_name else "No request received yet"
     }

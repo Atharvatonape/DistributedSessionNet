@@ -46,8 +46,8 @@
                     console.log('Response from server:', response);
                     document.getElementById("statusMessage").textContent = "Fake data sent to " + response.worker;
                     fetchWorkerStatus();
-                }).fail(function() {
-                    alert("Failed to send fake data.");
+                }).fail(function(xhr, status, error) {
+                    alert("Failed to send fake data." + xhr.responseText);
                 });
             };
 
@@ -77,28 +77,56 @@
                 }
 
                 $.getJSON('/workers', function(workers) {
+                    let allPromises = [];  // Array to hold all fetch promises
+
                     for (let i = 1; i <= 5; i++) {
                         if (i <= workers.length) {
                             let url = workers[i - 1];
-                            $.get(url + '/status', function(status) {
-
+                            let fetchPromise = $.get(url + '/status', function(status) {
                                 let requestsHandled = status.requests_handled || 0;
-                                let totalRequests = 100;
+                                let totalRequests = 2;
 
                                 let content = `<div class='worker-info'>
-                                                   <p><strong>Name:</strong> ${status.name}</p>
-                                                   <p><strong>Active:</strong> ${status.active ? 'Yes' : 'No'}</p>
-                                                   <p><strong>Requests Handled:</strong> ${status.requests_handled} / ${totalRequests}</p>
-                                                   <p><strong>Last Request:</strong> ${status.latest_request}</p>
-                                               </div>`;
+                                                <p><strong>Name:</strong> ${status.name}</p>
+                                                <p><strong>Active:</strong> ${status.active ? 'Yes' : 'No'}</p>
+                                                <p><strong>Requests Handled:</strong> ${requestsHandled} / ${totalRequests}</p>
+                                                <p><strong>Last Request:</strong> ${status.latest_request}</p>
+                                            </div>`;
                                 document.getElementById(`workerStatus${i}`).innerHTML = content;
+                                if (requestsHandled >= totalRequests) {
+                                    document.getElementById(`workerStatus${i}`).innerHTML += '<p style="color: red;">Worker has reached the request limit.</p>';
+                                }
+
+                                return { worker_id: status.name, state: status.active };
                             }).fail(function() {
                                 document.getElementById(`workerStatus${i}`).innerHTML = 'Failed to load data';
                             });
+
+                            allPromises.push(fetchPromise);
                         } else {
                             document.getElementById(`workerStatus${i}`).innerHTML = 'No active worker';
                         }
                     }
+
+                    // When all promises are resolved, send updates to the TaskManager
+                    Promise.all(allPromises).then(results => {
+                        results.forEach(result => {
+                            if (result) {
+                                $.ajax({
+                                    url: '/update_status',
+                                    type: 'POST',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify(result),
+                                    success: function(response) {
+                                        console.log('Task Manager Update Response:', response);
+                                    },
+                                    error: function(xhr, status, error) {
+                                        console.log('Error updating Task Manager:', xhr.responseText);
+                                    }
+                                });
+                            }
+                        });
+                    });
                 });
             }
         });

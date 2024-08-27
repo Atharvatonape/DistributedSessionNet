@@ -5,12 +5,16 @@ from utils.docker_containers import get_running_container_names, get_urls_of_run
 from utils.fake_data import fake_data_gen
 from load_balancing import round_robin
 import requests
+import logging
+from load_balancing import TaskManager
+
 
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 client = docker.from_env()
 workers_status = {}
+app.logger.setLevel(logging.INFO)
 
 @app.route('/')
 def index():
@@ -39,10 +43,12 @@ def handle_create_workers(data):
             ports={'8110/tcp': port},
             environment={'NODE_ID': f'node_{i+1}', 'PORT': '8110'},
             name=container_name,
+            hostname=container_name,
             network='abc-net',
             labels={'com.docker.compose.project': "session-management"}
         )
         workers[container_name] = f'http://localhost:{port}'
+        TaskManager().update_worker_state(container_name, "active")
         emit('update', {'message': f'{container_name} created at http://localhost:{port}'}, broadcast=True)
 
     emit('update', {'message': f'{num_workers} workers created'}, broadcast=True)
@@ -86,19 +92,32 @@ def list_workers():
 @app.route('/send_fake_data', methods=['POST'])
 def send_fake_data():
     try:
-        worker = round_robin()
         fake_data = fake_data_gen()
-        worker_url = worker
-        response = requests.post(f'http://{worker_url}:8110/receive_data', json=fake_data)
-        if response.status_code != 200:
-            return jsonify({"success": False, "message": "Failed to send fake data."}), 500
-
-        # If all data was sent successfully, return the worker's name
-        return jsonify({"success": True, "message": "Fake data sent successfully.", "worker": worker_url})
-
+        task_manager = TaskManager()
+        #app.logger.info(f"Worker states: {task_manager.worker_states}")
+        app.logger.info(f"Before Loading: {len(task_manager.task_list)}, {len(task_manager.taske)}")
+        task_manager.load_task(fake_data)
+        response = 'response'
+        app.logger.info(f"After Loading: {len(task_manager.task_list)}, {len(task_manager.taske)}")
+        #app.logger.info(f"Response: {response}")
+        return jsonify(response)
     except requests.exceptions.RequestException as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+@app.route('/update_status', methods=['POST'])
+def status():
+    data = request.json
+    worker_id = data.get('name')
+    state = data.get('active')
+    if state == True or state == "True":
+        state = "active"
+
+    task_manager = TaskManager()
+    task_manager.update_worker_state(worker_id, state)
+    #app.logger.info(f"Received update status request with data: \n{data}")
+    #app.logger.info(f"Worker state updated: {worker_id} - {state}")
+    #app.logger.info(f"Worker states: {task_manager.worker_states}")
+    return jsonify({"success": True, "message": "Worker state updated"})
 
 
 
