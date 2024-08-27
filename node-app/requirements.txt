@@ -3,3 +3,4 @@ flask
 docker
 flask-socketio
 flask-cors
+APScheduler

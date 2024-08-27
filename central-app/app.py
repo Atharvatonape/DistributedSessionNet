@@ -23,33 +23,13 @@ def index():
 @socketio.on('start_create_workers')
 def handle_create_workers(data):
     num_workers = data.get('num_workers', 2)
-    base_port = 5001
-    workers = {}
+    emit('update', {'message': f'Creating {num_workers} workers...'}, broadcast=True)
+    task_manager = TaskManager()
+    # Delegate worker creation to the TaskManager
+    workers = task_manager.create_workers(num_workers)
 
-    for i in range(num_workers):
-        container_name = f"worker_{i+1}"
-        emit('update', {'message': f'Creating {container_name}...'}, broadcast=True)
-        try:
-            existing_container = client.containers.get(container_name)
-            existing_container.stop()
-            existing_container.remove()
-        except docker.errors.NotFound:
-            pass
-
-        port = base_port + i
-        container = client.containers.run(
-            "worker_image",
-            detach=True,
-            ports={'8110/tcp': port},
-            environment={'NODE_ID': f'node_{i+1}', 'PORT': '8110'},
-            name=container_name,
-            hostname=container_name,
-            network='abc-net',
-            labels={'com.docker.compose.project': "session-management"}
-        )
-        workers[container_name] = f'http://localhost:{port}'
-        TaskManager().update_worker_state(container_name, "active")
-        emit('update', {'message': f'{container_name} created at http://localhost:{port}'}, broadcast=True)
+    for worker_name, url in workers.items():
+        emit('update', {'message': f'{worker_name} created at {url}'}, broadcast=True)
 
     emit('update', {'message': f'{num_workers} workers created'}, broadcast=True)
 
