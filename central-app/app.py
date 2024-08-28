@@ -41,6 +41,7 @@ def handle_kill_worker(data):
         container = client.containers.get(worker_name)
         container.stop()
         container.remove()
+        app.logger.info(f"Worker {worker_name} killed")
         emit('update', {'message': f'{worker_name} successfully killed'}, broadcast=True)
     except Exception as e:
         emit('update', {'message': f'Error killing {worker_name}: {str(e)}'}, broadcast=True)
