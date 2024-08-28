@@ -27,7 +27,7 @@ def handle_create_workers(data):
     task_manager = TaskManager()
     # Delegate worker creation to the TaskManager
     workers = task_manager.create_workers(num_workers)
-
+    app.logger.info(f"Workers: {workers}")
     for worker_name, url in workers.items():
         emit('update', {'message': f'{worker_name} created at {url}'}, broadcast=True)
 
