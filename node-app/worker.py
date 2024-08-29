@@ -41,7 +41,7 @@ def receive_data():
         'state': status_worker,
         }
 
-        response = requests.post('http://session-management-central-1:7110/update_status', json=status_data)
+        response = requests.post('http://distributedsessionnet-central-1:7110/update_status', json=status_data)
         app.logger.info(f"Response from central app: {response.json()}")
         return jsonify({"received": True, "data": data})
     else:

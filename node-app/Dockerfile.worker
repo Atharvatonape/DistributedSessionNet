@@ -9,7 +9,16 @@ WORKDIR /app
 COPY . /app
 
 # Install any needed packages specified in requirements.txt
-RUN apt-get update && apt-get install -y curl \
+
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    gcc \
+    libffi-dev \
+    libssl-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && pip install -r requirements.txt
 # Make port 8110 available to the world outside this container
 EXPOSE 8110
@@ -20,6 +29,6 @@ ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=8110
 
 # Command to run the app
-CMD ["flask", "run"]
+CMD ["python", "worker.py"]
 
 # docker build -f Dockerfile.worker -t worker_image .
