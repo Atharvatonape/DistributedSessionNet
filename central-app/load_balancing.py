@@ -90,12 +90,14 @@ class TaskManager:
         """ Continuously process and assign tasks to available workers. """
         while True:
             available_workers = [w for w, state in self.worker_states.items() if state == 'active']
-            while not self.task_list.empty() and available_workers:
+            app.logger.info(f"Available workers: {available_workers}")
+            while self.task_list and available_workers:  # Check if task list is not empty
                 task_data = self.task_list.pop(0)  # Retrieve a task from the front of the list
                 worker = available_workers.pop(0)  # Use round-robin to select the next available worker
                 self.send_task(task_data, worker)
+                available_workers.append(worker)  # Add worker back to the end of the list
 
-            time.sleep(2)
+            time.sleep(1)
 
     def send_task(self, task_data, worker):
         #app.logger.info(f"Sending task: {task_data}")

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Create and Manage Workers</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"">
+    <link rel="icon" href="{{ url_for('static', filename='fav.jpg') }}" type="image/png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -45,7 +46,8 @@
                 $.post('/send_fake_data', function(response) {
                     console.log('Response from server:', response);
                     document.getElementById("statusMessage").textContent = "Fake data sent to " + response.worker;
-                    fetchWorkerStatus();
+                    setTimeout(fetchWorkerStatus, 1200);
+                    //setTimeout(fetchWorkerStatus, 3000);
                 }).fail(function(xhr, status, error) {
                     alert("Failed to send fake data." + xhr.responseText);
                 });

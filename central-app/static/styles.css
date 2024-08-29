@@ -45,19 +45,19 @@ select {
 }
 
 /* Worker status styles */
+/* Worker status styles */
+/* Worker status styles */
 .worker-status-container {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap; /* Allow wrapping to the next line */
     justify-content: flex-start;
     align-items: flex-start;
-    overflow-x: auto;
     margin-top: 20px;
 }
 
 .worker-status {
-    flex: 0 0 auto;
-    min-width: 250px;
-    margin: 5px;
+    flex: 0 0 31%; /* Ensure three containers per row with a small margin */
+    margin: 1%;
     padding: 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -66,6 +66,7 @@ select {
     box-sizing: border-box;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+
 
 /* Active worker highlighting */
 .active-yes {
