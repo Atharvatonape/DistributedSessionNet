@@ -52,8 +52,15 @@
                 });
             };
 
-
-
+            function loadWorkers() {
+                $.getJSON('/workers_get', function(data) {
+                    var workerList = document.getElementById('activeWorkers');
+                    var taskInfo = document.getElementById('taskInfo'); // New element for task info
+                    workerList.innerHTML = `<h3>Active Workers: ${data.activeWorkers}</h3>`;
+                    taskInfo.innerHTML = `<p>Successful Tasks: ${data.successfulTasks}</p>
+                                          <p>Task List Duplicate Count: ${data.taskListDuplicateCount}</p>`;
+                });
+            }
 
             function loadWorkers() {
                 $.getJSON('/workers_get', function(workers) {
@@ -150,6 +157,7 @@
     <select id="workerSelect"><option>Select All</option></select>
     <p id="statusMessage">Ready to create or kill workers.</p>
     <div id="activeWorkers"></div>
+    <div id="taskInfo" class="task-info"></div>  <!-- New div for displaying task information -->
     <div class="worker-status-container">
         <div id="workerStatus1" class="worker-status">No active worker</div>
         <div id="workerStatus2" class="worker-status">No active worker</div>

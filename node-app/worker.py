@@ -16,9 +16,17 @@ count = 0
 status_worker = True
 reset_timer = None  # Global timer for resetting count
 
-def reset_count():
-    global count
+def reset_worker_status():
+    global count, status_worker
+    status_worker = True
     count = 0  # Reset count to zero
+    # status_data = {
+    #     'name': socket.gethostname(),
+    #     'active': True,
+    #     "identifier": "reset"
+    # }
+    # response = requests.post('http://distributedsessionnet-central-1:7110/update_status', json=status_data)
+    # app.logger.info(f"Response from central app after updating the worker status: {response.json()}")
 
 @app.route('/')
 def index():
@@ -27,6 +35,7 @@ def index():
 @app.route('/receive_data', methods=['POST'])
 def receive_data():
     global latest_request_name, count, status_worker, reset_timer
+    # Process only if the worker is active
     if status_worker:
         data = request.json
         app.logger.info(f"Received data: {data}")
@@ -35,24 +44,31 @@ def receive_data():
             latest_request_name = data['name']
             count += 1
 
-        # Check if count reached 2 and start/reset timer
-        if count <= 2:
-            # Cancel the existing timer if it's already running
+        # Check if count reached 2 and trigger status change
+        if count >= 2:
+            status_worker = False  # Set worker status to inactive immediately
+            app.logger.info("Worker status set to inactive")
+
+            # Send status to the central app
+            status_data = {
+                'name': socket.gethostname(),
+                'active': status_worker,
+            }
+            response = requests.post('http://distributedsessionnet-central-1:7110/update_status', json=status_data)
+            app.logger.info(f"Response from central app: {response.json()}")
+
+            # Start a timer to reset the worker status after 10 seconds
             if reset_timer is not None:
-                reset_timer.cancel()
-            reset_timer = threading.Timer(10.0, reset_count)
+                reset_timer.cancel()  # Cancel any existing timer
+            reset_timer = threading.Timer(10.0, reset_worker_status)
             reset_timer.start()
 
-        status_data = {
-            'worker_id': socket.gethostname(),
-            'state': status_worker,
-        }
-
-        response = requests.post('http://distributedsessionnet-central-1:7110/update_status', json=status_data)
-        app.logger.info(f"Response from central app: {response.json()}")
         return jsonify({"received": True, "data": data})
+
     else:
+        app.logger.info("Worker is inactive; rejecting request.")
         return jsonify({"received": False, "message": "Worker is not active"})
+
 
 @app.route('/status', methods=['GET'])
 def status():
