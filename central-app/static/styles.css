@@ -1,91 +1,110 @@
 /* General body styles */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     margin: 20px;
-    background-color: #f9f9f9;
-    color: #333;
+    background-color: #f5f5f7; /* Apple-like soft light gray background */
+    color: #1d1d1f; /* Dark gray for text, slightly softer than black */
+    text-align: center; /* Centering all text elements by default */
 }
 
 /* Headings */
 h1 {
-    font-size: 24px;
-    color: #333;
+    font-size: 28px;
+    color: #1d1d1f;
     margin-bottom: 20px;
+    font-weight: 600; /* Slightly bolder for a stronger hierarchy */
+    text-align: center; /* Explicitly center the heading */
 }
 
 /* Buttons and Select dropdown styling */
 select, button {
     margin: 5px;
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+    padding: 12px 18px; /* Comfortable padding for interaction */
+    border-radius: 8px; /* Apple uses rounded corners */
+    border: none; /* Remove borders for a cleaner look */
     font-size: 16px;
     cursor: pointer;
     display: inline-block; /* Align items horizontally */
+    background-color: #007aff; /* Apple's signature blue */
+    color: #ffffff; /* White text for contrast */
+    transition: background-color 0.2s ease, box-shadow 0.2s ease; /* Smooth transitions */
 }
 
 button:hover {
-    background-color: #4a54e1;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    background-color: #005bb5; /* Slightly darker on hover */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Soft shadow for depth */
 }
 
 select {
-    background-color: white;
-    color: #333;
+    background-color: #f5f5f7; /* Matching the background color for consistency */
+    color: #1d1d1f;
+    transition: border-color 0.2s ease;
+}
+
+select:focus {
+    border-color: #007aff; /* Blue border on focus */
+    outline: none; /* Remove default focus outline */
 }
 
 /* Container for grouped actions */
 .action-group {
-    background-color: #e9e9ff;
-    padding: 10px;
-    border-radius: 8px;
+    background-color: #ffffff; /* White background for clarity */
+    padding: 15px;
+    border-radius: 12px;
     display: flex; /* Ensure all items are in a row */
     align-items: center; /* Align vertically */
     justify-content: center; /* Centering horizontally */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Very subtle shadow */
 }
 
-/* Worker status styles */
-/* Worker status styles */
 /* Worker status styles */
 .worker-status-container {
     display: flex;
     flex-wrap: wrap; /* Allow wrapping to the next line */
-    justify-content: flex-start;
+    justify-content: center; /* Center containers horizontally */
     align-items: flex-start;
     margin-top: 20px;
 }
 
 .worker-status {
-    flex: 0 0 31%; /* Ensure three containers per row with a small margin */
-    margin: 1%;
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    flex: 0 0 30%; /* Consistent sizing */
+    margin: 1.5%;
+    padding: 20px;
+    border: 1px solid #d1d1d6; /* Light gray border */
+    border-radius: 12px;
     background-color: #ffffff;
-    min-height: 150px;
+    min-height: 160px;
     box-sizing: border-box;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+    transition: box-shadow 0.2s ease, transform 0.2s ease; /* Smooth interactions */
 }
 
+.worker-status:hover {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15); /* Slightly deeper shadow on hover */
+    transform: translateY(-2px); /* Lift on hover for a more dynamic feel */
+}
 
 /* Active worker highlighting */
 .active-yes {
-    color: green;
+    color: #34c759; /* Apple's green for success */
+    font-weight: 600;
 }
 
 .active-no {
-    color: red;
+    color: #ff3b30; /* Apple's red for failure */
+    font-weight: 600;
 }
 
 /* List styles for active workers */
 #activeWorkers ul {
     list-style-type: none;
     padding: 0;
+    margin: 10px 0;
 }
 
 #activeWorkers li {
-    padding: 8px;
-    border-bottom: 1px solid #eee;
+    padding: 10px;
+    border-bottom: 1px solid #d1d1d6;
 }
 
 #activeWorkers li:last-child {
@@ -95,36 +114,65 @@ select {
 .task-info {
     margin-top: 10px;
     padding: 15px;
-    background-color: #eef;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #f2f2f7; /* Light gray background for subtle contrast */
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Soft shadow for a gentle touch */
 }
-
 
 /* Task Metrics Container styles */
 .task-metrics-container {
     display: flex;
-    justify-content: space-around; /* Distribute space evenly around the items */
+    justify-content: center; /* Center containers horizontally */
     margin: 20px 0;
+    gap: 20px; /* Evenly spaced gaps between metric boxes */
 }
 
 .metric-box {
     flex-grow: 1; /* Each box will grow equally */
     text-align: center;
-    padding: 15px;
-    margin: 0 10px;
-    background-color: #f1f1f1;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 15px; /* Slightly reduced padding for a more compact look */
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Subtle shadow */
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.metric-box:hover {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15); /* Lift effect on hover */
+    transform: translateY(-2px);
 }
 
 .metric-box h4 {
-    margin-bottom: 10px;
-    color: #333;
+    margin-bottom: 10px; /* Reduced margin for a tighter layout */
+    color: #1d1d1f;
+    font-size: 16px; /* Slightly smaller font size for heading */
+    font-weight: 600;
 }
 
 .metric-box p {
-    font-size: 20px;
+    font-size: 18px; /* Slightly smaller font size for the metric values */
     font-weight: bold;
-    color: #4a54e1; /* Matching the hover color of buttons for consistency */
+    color: #007aff; /* Apple's signature blue */
+}
+/* Checkbox styling */
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 2px solid #007aff; /* Add a blue border */
+    border-radius: 4px; /* Rounded corners for a softer look */
+    background-color: #f5f5f7; /* Match the background color for consistency */
+    appearance: none; /* Remove default checkbox styling */
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease; /* Smooth transitions */
+}
+
+input[type="checkbox"]:checked {
+    background-color: #007aff; /* Fill background with blue when checked */
+    border-color: #005bb5; /* Darken border color when checked */
+}
+
+input[type="checkbox"]:focus {
+    outline: none; /* Remove the default focus outline */
+    box-shadow: 0 0 4px #007aff; /* Add a subtle glow on focus */
 }

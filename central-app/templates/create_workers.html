@@ -17,9 +17,15 @@
                 }
             });
 
+            socket.on('task_completed', function() {
+                fetchWorkerStatus();  // Refresh worker status when a task is completed
+                loadWorkers();        // Optional: Refresh the worker list if needed
+            });
+
             document.getElementById('startButton').onclick = function() {
                 var numWorkers = document.getElementById('numWorkersSelect').value;
                 socket.emit('start_create_workers', {num_workers: parseInt(numWorkers, 10)});
+                fetchWorkerStatus();
                 loadWorkers();
             };
 
@@ -50,7 +56,6 @@
                 }).fail(function(xhr, status, error) {
                     alert("Failed to send fake data: " + xhr.responseText);
                 });
-                loadWorkers();
             };
 
             function loadWorkers() {
@@ -136,7 +141,7 @@
     </script>
 </head>
 <body>
-    <h1>Worker Creation and Management</h1>
+    <h1>Inhouse Redis</h1>
     <select id="numWorkersSelect">
         <option value="1">1 Worker</option>
         <option value="2">2 Workers</option>
