@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Create and Manage Workers</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -20,6 +20,7 @@
             document.getElementById('startButton').onclick = function() {
                 var numWorkers = document.getElementById('numWorkersSelect').value;
                 socket.emit('start_create_workers', {num_workers: parseInt(numWorkers, 10)});
+                loadWorkers();
             };
 
             document.getElementById('killButton').onclick = function() {
@@ -37,45 +38,39 @@
 
             document.getElementById('getStatusButton').onclick = function() {
                 fetchWorkerStatus();
+                loadWorkers();
             };
 
             document.getElementById('sendFakeDataButton').onclick = function() {
-
                 // Request the backend to generate fake data and send it to the worker
                 $.post('/send_fake_data', function(response) {
                     console.log('Response from server:', response);
                     document.getElementById("statusMessage").textContent = "Fake data sent to " + response.worker;
                     setTimeout(fetchWorkerStatus, 1200);
-                    //setTimeout(fetchWorkerStatus, 3000);
                 }).fail(function(xhr, status, error) {
-                    alert("Failed to send fake data." + xhr.responseText);
+                    alert("Failed to send fake data: " + xhr.responseText);
                 });
+                loadWorkers();
             };
 
             function loadWorkers() {
                 $.getJSON('/workers_get', function(data) {
-                    var workerList = document.getElementById('activeWorkers');
-                    var taskInfo = document.getElementById('taskInfo'); // New element for task info
-                    workerList.innerHTML = `<h3>Active Workers: ${data.activeWorkers}</h3>`;
-                    taskInfo.innerHTML = `<p>Successful Tasks: ${data.successfulTasks}</p>
-                                          <p>Task List Duplicate Count: ${data.taskListDuplicateCount}</p>`;
-                });
-            }
+                    // Update metrics
+                    document.getElementById('activeWorkers').textContent = data.activeWorkers;
+                    document.getElementById('successfulTasks').textContent = data.successfulTasks;
+                    document.getElementById('taskListDuplicates').textContent = data.taskListDuplicateCount;
 
-            function loadWorkers() {
-                $.getJSON('/workers_get', function(workers) {
+                    // Update worker list (if needed)
                     var select = document.getElementById('workerSelect');
-                    var workerList = document.getElementById('activeWorkers');
+                    var workerList = document.getElementById('activeWorkersList');
                     select.innerHTML = '<option>Select All</option>';
-                    workerList.innerHTML = '<h3>Active Workers</h3><ul>';
+                    workerList.innerHTML = `<h3>Active Workers: ${data.activeWorkers}</h3>`;
 
-                    workers.forEach(function(worker) {
+                    data.workers.forEach(function(worker) {
                         var option = new Option(worker, worker);
                         select.add(option);
                         workerList.innerHTML += `<li>${worker}</li>`;
                     });
-
-                    workerList.innerHTML += '</ul>';
                 });
             }
 
@@ -156,8 +151,25 @@
     <button id="killButton">Kill Selected Worker</button>
     <select id="workerSelect"><option>Select All</option></select>
     <p id="statusMessage">Ready to create or kill workers.</p>
-    <div id="activeWorkers"></div>
-    <div id="taskInfo" class="task-info"></div>  <!-- New div for displaying task information -->
+
+    <!-- Task Metrics Container -->
+    <div class="task-metrics-container">
+        <div class="metric-box">
+            <h4>Active Workers:</h4>
+            <p id="activeWorkers">0</p>
+        </div>
+        <div class="metric-box">
+            <h4>Successful Tasks:</h4>
+            <p id="successfulTasks">0</p>
+        </div>
+        <div class="metric-box">
+            <h4>Task List Duplicates:</h4>
+            <p id="taskListDuplicates">0</p>
+        </div>
+    </div>
+
+    <div id="activeWorkersList"></div>
+
     <div class="worker-status-container">
         <div id="workerStatus1" class="worker-status">No active worker</div>
         <div id="workerStatus2" class="worker-status">No active worker</div>
