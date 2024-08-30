@@ -33,10 +33,11 @@ class TaskManager:
                 cls._instance = super(TaskManager, cls).__new__(cls)
                 cls._instance.worker_states = {"worker_1": "inactive", "worker_2": "inactive", "worker_3": "inactive", "worker_4": "inactive", "worker_5": "inactive"}
                 cls._instance.task_list = []
-                cls._instance.taske = []
+                cls._instance.task_list_duplicate = []
                 cls._instance.client = docker.from_env()
                 cls._instance.base_port = 5001
                 cls._instance.limit_try = 0
+                cls._instance.successful_task = 0
                 cls._instance._initialize_worker_thread()
                 cls._instance._initialize_status_checker()
         return cls._instance
@@ -66,7 +67,7 @@ class TaskManager:
                     app.logger.info(f"Creating new worker attempt {self.limit_try}")
                     name = len(get_running_container_names()) + 1
                     app.logger.info(f"Creating new worker with name: {name}")
-                    self.create_workers(1, name )  # Create one more worker
+                    self.create_workers(1, name ) # Create one more worker
                 else:
                     app.logger.info("Max retry limit reached. No more workers will be created.")
             time.sleep(5)
@@ -79,7 +80,7 @@ class TaskManager:
             if response.status_code == 200:
                 status_info = response.json()
                 active = status_info['active']
-                print(f"Status of {worker_id} is active: {active}")
+                #print(f"Status of {worker_id} is active: {active}")
                 self.update_worker_state(worker_id, 'active' if active else 'inactive')
                 #app.logger.info(f"Status of {worker_id} is : {active}")
         except requests.exceptions.RequestException as e:
@@ -108,16 +109,18 @@ class TaskManager:
                 self.task_list.append(task_data)
             else:
                 app.logger.info(f"Task sent successfully to {worker}.")
+                self.successful_task += 1
 
     def update_worker_state(self, worker_id, state):
         self.worker_states[worker_id] = state
+        #app.logger.info(f"This is update worker {self.worker_states}")
 
     def get_worker_state(self, worker_id):
         return self.worker_states.get(worker_id, "unknown")
 
     def load_task(self, data):
-        self.taske.append(data)
-        app.logger.info(f"Task loaded: {len(self.taske)}")
+        self.task_list_duplicate.append(data)
+        app.logger.info(f"Task loaded: {len(self.task_list_duplicate)}")
         self.task_list.append(data)
         app.logger.info(f"Task list: {len(self.task_list)}")
 
@@ -156,6 +159,7 @@ class TaskManager:
                         labels={'com.docker.compose.project': "distributedsessionnet"}
                     )
                     workers[container_name] = f'http://localhost:{port}'
+                    time.sleep(3)
                     self.worker_states[container_name] = "active"
                     current_workers.append(container_name)  # Add the new container name to the list
                 except docker.errors.APIError as e:

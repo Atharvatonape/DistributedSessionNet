@@ -65,9 +65,16 @@ def workers():
     jsonn = get_urls_of_running_containers()
     return jsonify(jsonn)
 
-@app.route('/workers_get')
-def list_workers():
-    return jsonify(get_running_container_names())
+@app.route('/workers_get', methods=['GET'])
+def get_workers():
+    task_manager = TaskManager()  # Assuming singleton pattern
+    workers = get_running_container_names()
+    active_count = sum(1 for w in workers if task_manager.get_worker_state(w) == 'active')
+    return jsonify({
+        'activeWorkers': active_count,
+        'successfulTasks': task_manager.successful_task,
+        'taskListDuplicateCount': len(task_manager.task_list_duplicate)
+    })
 
 
 @app.route('/send_fake_data', methods=['POST'])
@@ -76,10 +83,10 @@ def send_fake_data():
         fake_data = fake_data_gen()
         task_manager = TaskManager()
         #app.logger.info(f"Worker states: {task_manager.worker_states}")
-        app.logger.info(f"Before Loading: {len(task_manager.task_list)}, {len(task_manager.taske)}")
+        app.logger.info(f"Before Loading: {len(task_manager.task_list)}, {len(task_manager.task_list_duplicate)}")
         task_manager.load_task(fake_data)
         response = 'response'
-        app.logger.info(f"After Loading: {len(task_manager.task_list)}, {len(task_manager.taske)}")
+        app.logger.info(f"After Loading: {len(task_manager.task_list)}, {len(task_manager.task_list_duplicate)}")
         #app.logger.info(f"Response: {response}")
         return jsonify(response)
     except requests.exceptions.RequestException as e:
@@ -92,6 +99,12 @@ def status():
     state = data.get('active')
     if state == True or state == "True":
         state = "active"
+    try:
+        identifier = data.get('identifier')
+        #app.logger.info(f"Received update status request with Reset data: {identifier}")
+        #app.logger.info(f"Data: {data}")
+    except:
+        pass
 
     task_manager = TaskManager()
     task_manager.update_worker_state(worker_id, state)
