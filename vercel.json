@@ -2,18 +2,21 @@
     "version": 2,
     "builds": [
       {
-        "src": "central-app/app.py",
+        "src": "app.py",
         "use": "@vercel/python"
       }
     ],
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "central-app/app.py"
+        "dest": "app.py"
       }
+    ],
+    "includeFiles": [
+      "utils/**",
+      "load_balancing.py"
     ],
     "env": {
       "FLASK_ENV": "production"
     }
-  }
-  
+}
