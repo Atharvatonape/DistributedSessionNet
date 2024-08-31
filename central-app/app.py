@@ -3,7 +3,7 @@ from flask_socketio import SocketIO, emit
 import docker
 from utils.docker_containers import get_running_container_names, get_urls_of_running_containers
 from utils.fake_data import fake_data_gen
-from load_balancing import round_robin, TaskManager
+from utils.load_balancing import round_robin, TaskManager
 import requests
 import logging
 
