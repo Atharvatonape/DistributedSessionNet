@@ -28,6 +28,11 @@ def reset_worker_status():
     # response = requests.post('http://distributedsessionnet-central-1:7110/update_status', json=status_data)
     # app.logger.info(f"Response from central app after updating the worker status: {response.json()}")
 
+@app.after_request
+def apply_csp(response):
+    response.headers["Content-Security-Policy"] = "upgrade-insecure-requests"
+    return response
+
 @app.route('/')
 def index():
     return "Welcome to the Worker App my dear!"
