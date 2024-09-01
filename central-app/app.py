@@ -6,11 +6,10 @@ from utils.fake_data import fake_data_gen
 from utils.load_balancing import round_robin, TaskManager
 import requests
 import logging
-
-
-
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 socketio = SocketIO(app)
 client = docker.from_env()
 workers_status = {}
@@ -116,4 +115,4 @@ def status():
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host='0.0.0.0', port=7110)
+    app.run(debug=True, host='0.0.0.0', port=7110, ssl_context=('cert.pem', 'key.pem'))
