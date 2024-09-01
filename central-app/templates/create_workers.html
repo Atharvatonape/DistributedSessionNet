@@ -92,7 +92,7 @@
                     for (let i = 1; i <= 5; i++) {
                         if (i <= workers.length) {
                             let workerName = workers[i - 1];
-                            let url = `http://${workerName}:8110/status`;  // Use the worker name to construct the URL for the GET request
+                            let url = `https://${workerName}:8110/status`;  // Use the worker name to construct the URL for the GET request
                             console.log(`Fetching status from: ${url}`);
                             console.log(`Worker Name: ${workerName}`);
                             // Construct the URL using the worker name and the specified port and endpoint
