@@ -17,7 +17,7 @@ def get_container_ips_by_name_prefix(name_prefix, network_name):
             else:
                 print(f"Warning: The network '{network_name}' is not attached to the container '{container.name}'.")
     if not container_ips:
-        raise ValueError(f"No containers found with names starting with '{name_prefix}'.")
+        raise ValueError(f"No containers found with names starting with '{name_prefix}'.\n")
     return container_ips
 
 # Replace 'session-net' with the actual name of the network if it's different
