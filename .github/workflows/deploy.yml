@@ -33,5 +33,4 @@ jobs:
     - name: Deploy to EC2
       run: |
         rsync -avz --exclude '.git*' --delete ./ ec2-user@51.20.78.225:/home/ec2-user/session
-        ssh ec2-user@51.20.78.225 "cd /home/ec2-user/session && bash deploy_script.sh"
-
+        ssh ec2-user@51.20.78.225 "bash /home/ec2-user/deploy_script.sh"
