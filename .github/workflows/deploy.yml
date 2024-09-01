@@ -18,16 +18,17 @@ jobs:
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" | wc -l
         echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n 1
+      
+    - name: Set up SSH Key and Known Hosts
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -t rsa 51.20.78.225 >> ~/.ssh/known_hosts
+        chmod 644 ~/.ssh/known_hosts
 
     - name: Debug SSH connection
       run: ssh -vvv ec2-user@51.20.78.225
-
-    - name: Set up SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | sed 's/\\n/\n/g' > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H 51.20.78.225 >> ~/.ssh/known_hosts
 
     - name: Deploy to EC2
       run: |
