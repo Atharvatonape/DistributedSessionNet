@@ -18,7 +18,7 @@ jobs:
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" | wc -l
         echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n 1
-      
+
     - name: Set up SSH Key and Known Hosts
       run: |
         mkdir -p ~/.ssh
@@ -32,5 +32,5 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        rsync -avz --exclude '.git*' --delete ./ ec2-user@51.20.78.225:/home/ec2-user/session
+        rsync -avz --exclude '.git*' --delete ./ ec2-user@51.20.78.225:/home/ec2-user/DistributedSessionNet
         ssh ec2-user@51.20.78.225 "bash /home/ec2-user/deploy_script.sh"
