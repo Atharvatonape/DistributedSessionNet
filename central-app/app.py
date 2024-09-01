@@ -69,7 +69,7 @@ def handle_kill_all_workers():
 
 @app.route('/workers', methods=['GET'])
 def workers():
-    jsonn = get_urls_of_running_containers()
+    jsonn = get_running_container_names()
     return jsonify(jsonn)
 
 @app.route('/workers_get', methods=['GET'])
