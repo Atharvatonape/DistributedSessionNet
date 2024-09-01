@@ -6,14 +6,22 @@ from utils.fake_data import fake_data_gen
 from utils.load_balancing import round_robin, TaskManager
 import requests
 import logging
-from flask_cors import CORS
+#from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
 socketio = SocketIO(app)
 client = docker.from_env()
 workers_status = {}
 app.logger.setLevel(logging.INFO)
+
+@app.after_request
+def after_request(response):
+    """Set CORS headers for every response."""
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 @app.route('/')
 def index():
