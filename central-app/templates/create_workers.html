@@ -80,26 +80,31 @@
             }
 
             function fetchWorkerStatus() {
+                // Set initial loading message for each worker status display
                 for (let i = 1; i <= 5; i++) {
                     document.getElementById(`workerStatus${i}`).innerHTML = 'Loading...';
                 }
 
+                // Fetch the list of worker names
                 $.getJSON('/workers', function(workers) {
                     let allPromises = [];  // Array to hold all fetch promises
 
                     for (let i = 1; i <= 5; i++) {
                         if (i <= workers.length) {
-                            let url = workers[i - 1];
-                            let fetchPromise = $.get(url + '/status', function(status) {
+                            let workerName = workers[i - 1];
+                            // Construct the URL using the worker name and the specified port and endpoint
+                            let url = `http://${workerName}:8110/status`;  // Use the worker name to construct the URL for the GET request
+
+                            let fetchPromise = $.get(url, function(status) {
                                 let requestsHandled = status.requests_handled || 0;
                                 let totalRequests = 2;
 
                                 let content = `<div class='worker-info'>
-                                                <p><strong>Name:</strong> ${status.name}</p>
-                                                <p><strong>Active:</strong> ${status.active ? 'Yes' : 'No'}</p>
-                                                <p><strong>Requests Handled:</strong> ${requestsHandled} / ${totalRequests}</p>
-                                                <p><strong>Last Request:</strong> ${status.latest_request}</p>
-                                            </div>`;
+                                                    <p><strong>Name:</strong> ${status.name}</p>
+                                                    <p><strong>Active:</strong> ${status.active ? 'Yes' : 'No'}</p>
+                                                    <p><strong>Requests Handled:</strong> ${requestsHandled} / ${totalRequests}</p>
+                                                    <p><strong>Last Request:</strong> ${status.latest_request}</p>
+                                                </div>`;
                                 document.getElementById(`workerStatus${i}`).innerHTML = content;
                                 if (requestsHandled >= totalRequests) {
                                     document.getElementById(`workerStatus${i}`).innerHTML += '<p style="color: red;">Worker has reached the request limit.</p>';
@@ -116,7 +121,7 @@
                         }
                     }
 
-                    // When all promises are resolved, send updates to the TaskManager
+                    // When all promises are resolved, send updates to the Task Manager
                     Promise.all(allPromises).then(results => {
                         results.forEach(result => {
                             if (result) {
@@ -137,6 +142,7 @@
                     });
                 });
             }
+
         });
     </script>
 </head>
