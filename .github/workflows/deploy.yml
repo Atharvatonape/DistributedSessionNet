@@ -19,6 +19,9 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" | wc -l
         echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n 1
 
+    - name: Debug SSH connection
+      run: ssh -vvv ec2-user@51.20.78.225
+
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
