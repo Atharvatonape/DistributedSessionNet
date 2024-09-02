@@ -4,3 +4,4 @@ docker
 flask-socketio
 flask-cors
 APScheduler
+python-decouple
