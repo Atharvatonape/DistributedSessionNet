@@ -7,6 +7,8 @@ from utils.load_balancing import round_robin, TaskManager
 import requests
 import logging
 #from flask_cors import CORS
+from utils.tets import get_worker_ip_map
+
 
 app = Flask(__name__)
 #CORS(app)
@@ -69,7 +71,7 @@ def handle_kill_all_workers():
 
 @app.route('/workers', methods=['GET'])
 def workers():
-    jsonn = get_running_container_names()
+    jsonn = get_worker_ip_map()
     return jsonify(jsonn)
 
 @app.route('/workers_get', methods=['GET'])
