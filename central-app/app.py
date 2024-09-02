@@ -111,7 +111,7 @@ def send_fake_data():
     except requests.exceptions.RequestException as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
-@app.route('/update_status', methods=['POST'])
+@app.route('/update_status', methods=['GET'])
 def status():
     data = request.json
     worker_id = data.get('name')

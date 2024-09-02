@@ -61,7 +61,7 @@ def receive_data():
                 'name': socket.gethostname(),
                 'active': status_worker,
             }
-            response = requests.post(central_app_ip +'/update_status', json=status_data)
+            response = requests.get(central_app_ip +'/update_status', json=status_data)
             app.logger.info(f"Response from central app: {response.json()}")
 
             # Start a timer to reset the worker status after 10 seconds
