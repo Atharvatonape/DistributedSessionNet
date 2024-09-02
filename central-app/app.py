@@ -74,6 +74,16 @@ def workers():
     jsonn = get_running_container_names()
     return jsonify(jsonn)
 
+@app.route('/worker_status/<worker_name>', methods=['GET'])
+def worker_status(worker_name):
+    url = f"http://{worker_name}:8110/status"
+    try:
+        response = requests.get(url)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/workers_get', methods=['GET'])
 def get_workers():
     task_manager = TaskManager()  # Assuming singleton pattern
