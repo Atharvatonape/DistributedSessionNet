@@ -6,6 +6,7 @@ import socket
 from flask_cors import CORS
 import logging
 import threading  # Import threading for handling timers
+from decouple import config  # Import the config function from decouple
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -15,6 +16,7 @@ latest_request_name = None
 count = 0
 status_worker = True
 reset_timer = None  # Global timer for resetting count
+central_app_ip = config('CENTRAL_APP_IP', default='localhost')
 
 def reset_worker_status():
     global count, status_worker
@@ -59,7 +61,7 @@ def receive_data():
                 'name': socket.gethostname(),
                 'active': status_worker,
             }
-            response = requests.post('http://distributedsessionnet-central-1:7110/update_status', json=status_data)
+            response = requests.post(central_app_ip +'/update_status', json=status_data)
             app.logger.info(f"Response from central app: {response.json()}")
 
             # Start a timer to reset the worker status after 10 seconds
