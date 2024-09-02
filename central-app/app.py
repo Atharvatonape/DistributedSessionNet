@@ -71,7 +71,7 @@ def handle_kill_all_workers():
 
 @app.route('/workers', methods=['GET'])
 def workers():
-    jsonn = get_worker_ip_map()
+    jsonn = get_running_container_names()
     return jsonify(jsonn)
 
 @app.route('/workers_get', methods=['GET'])
