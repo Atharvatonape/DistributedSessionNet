@@ -19,6 +19,7 @@ reset_timer = None  # Global timer for resetting count
 central_app_ip = config('CENTRAL_APP_IP', default='localhost')
 
 def reset_worker_status():
+    app.logger.info("Resetting worker status...")
     global count, status_worker
     status_worker = True
     count = 0  # Reset count to zero
@@ -61,14 +62,15 @@ def receive_data():
                 'name': socket.gethostname(),
                 'active': status_worker,
             }
-            response = requests.post(central_app_ip +'/update_status', json=status_data)
-            app.logger.info(f"Response from central app: {response.json()}")
-
             # Start a timer to reset the worker status after 10 seconds
             if reset_timer is not None:
                 reset_timer.cancel()  # Cancel any existing timer
             reset_timer = threading.Timer(10.0, reset_worker_status)
             reset_timer.start()
+
+            # response = requests.get(central_app_ip +'/update_status', json=status_data)
+            # app.logger.info(f"Response from central app: {response.json()}")
+
 
         return jsonify({"received": True, "data": data})
 

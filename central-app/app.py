@@ -8,6 +8,8 @@ import requests
 import logging
 #from flask_cors import CORS
 from utils.tets import get_worker_ip_map
+import collections
+import time
 
 
 app = Flask(__name__)
@@ -76,12 +78,45 @@ def workers():
 
 @app.route('/worker_status/<worker_name>', methods=['GET'])
 def worker_status(worker_name):
-    url = f"http://{worker_name}:8110/status"
+    task_manager = TaskManager()  # Ensure this uses your existing TaskManager instance
     try:
-        response = requests.get(url)
-        return jsonify(response.json()), response.status_code
+        # Assuming the worker status includes whether it's active and its last response etc.
+        response = requests.get(f"http://{worker_name}:8110/status")
+        response_json = response.json()
+        # Add the request history to the JSON response
+        response_json['request_history'] = list(task_manager.request_history[worker_name])
+        return jsonify(response_json), response.status_code
     except requests.exceptions.RequestException as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/worker_status2/<worker_name>', methods=['GET'])
+def worker_status2(worker_name):
+    task_manager = TaskManager()  # Singleton instance of TaskManager
+    try:
+        # Retrieve the worker's history from the defaultdict
+        worker_history = task_manager.request_history[worker_name]
+        app.logger.info(f"Worker history for {worker_name}: {worker_history}")
+
+        # Process the history to extract the task data
+        history_data = [
+            {
+                'name': entry['name'],
+                'email': entry['email'],
+                'job': entry['job'],
+                'address': entry['address'],
+                'phone_number': entry['phone_number'],
+                'company': entry['company'],
+                'text': entry['text']
+            } for entry in worker_history
+        ]
+
+        return jsonify({
+            'active': task_manager.get_worker_state(worker_name) == 'active',
+            'request_history': history_data
+        }), 200
+    except Exception as e:
+        app.logger.error(f"Error in worker_status2: {str(e)}")  # Log the error
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/workers_get', methods=['GET'])
