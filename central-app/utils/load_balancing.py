@@ -33,6 +33,7 @@ class TaskManager:
             if cls._instance is None:
                 cls._instance = super(TaskManager, cls).__new__(cls)
                 cls._instance.worker_states = {f"worker_{i+1}": "inactive" for i in range(5)}
+                cls._instance.last_active_times = {f"worker_{i+1}": time.time() for i in range(5)}
                 cls._instance.task_queue = queue.Queue()
                 cls._instance.client = docker.from_env()
                 cls._instance.base_port = 5001
@@ -42,6 +43,7 @@ class TaskManager:
                 cls._instance.task_list = []
                 cls._instance._initialize_workers()
                 cls._instance._initialize_status_checker()
+                cls._instance._initialize_idle_checker()  # Initialize the idle checker
         return cls._instance
 
     def _initialize_workers(self):
@@ -55,12 +57,17 @@ class TaskManager:
         status_checker_thread.daemon = True
         status_checker_thread.start()
 
+    def _initialize_idle_checker(self):
+        idle_checker_thread = threading.Thread(target=self._check_idle_workers)
+        idle_checker_thread.daemon = True
+        idle_checker_thread.start()
+
     def _check_worker_status(self):
         while True:
             app.logger.info("Checking worker status...")
             # List to track active workers
             active_workers = [w for w, state in self.worker_states.items() if state == 'active']
-            app.logger.info(f"Active workers: {active_workers}")
+            #app.logger.info(f"Active workers: {active_workers}, Last active times: {self.last_active_times[active_workers[0]]}")
             # If there are no active workers and the total count of workers is less than 5
             if not active_workers and len(get_running_container_names()) < 5:
                 app.logger.info("No active workers found. Attempting to create new worker.")
@@ -86,6 +93,31 @@ class TaskManager:
             except queue.Empty:
                 continue
 
+    def _check_idle_workers(self):
+        idle_limit = 60  # Idle time limit in seconds
+        while True:
+            current_time = time.time()
+            running_containers = get_running_container_names()  # Get currently running container names
+            with self._lock:
+                for worker, last_active in list(self.last_active_times.items()):
+                    if (current_time - last_active > idle_limit and
+                        worker in running_containers):  # Ensure worker is still running
+                        self.delete_worker(worker)
+                time.sleep(1)
+
+    def delete_worker(self, worker):
+        try:
+            container = self.client.containers.get(worker)
+            container.stop()
+            container.remove()
+            app.logger.info(f"Deleted idle worker: {worker}")
+            #self.worker_states.pop(worker, None)
+            self.last_active_times.pop(worker, None)
+        except docker.errors.NotFound:
+            app.logger.warning(f"Worker {worker} not found for deletion.")
+        except Exception as e:
+            app.logger.error(f"Error deleting worker {worker}: {e}")
+
     def assign_task(self, task_data):
         for worker_id, state in self.worker_states.items():
             if state == 'active':
@@ -100,6 +132,7 @@ class TaskManager:
             if response.status_code == 200 and response.json().get('received'):
                 self.successful_task += 1
                 socketio.emit('task_completed')
+                self.last_active_times[worker] = time.time()
                 return True
             else:
                 self.update_worker_state(worker, 'inactive')
@@ -154,7 +187,7 @@ class TaskManager:
                     )
                     workers[container_name] = f'http://localhost:{port}'
                     app.logger.info(f"Worker {container_name} created successfully.")
-                    time.sleep(5)  # Wait for the worker to start
+                    time.sleep(1)  # Wait for the worker to start
                     self.worker_states[container_name] = "active"
                     current_workers.append(container_name)
                 except docker.errors.APIError as e:
