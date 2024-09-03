@@ -1,9 +1,9 @@
 
-# RedisTasks
+# Redis-Pro-Maxx
 
 ## Project Overview
 
-**Dynamic Python Load Balancer (DPLB)** is a Python-based task distribution system designed to efficiently manage and distribute tasks to dynamically created worker processes. The system automatically scales the number of workers based on the current load, ensuring optimal resource usage and cost efficiency. This self-contained application stores all its data internally, making it a robust and efficient solution for dynamic task management.
+**Redis-Pro-Maxx** is a Python-based task distribution system designed to efficiently manage and distribute tasks to dynamically created worker processes. The system automatically scales the number of workers based on the current load, ensuring optimal resource usage and cost efficiency. This self-contained application stores all its data internally, making it a robust and efficient solution for dynamic task management.
 
 ## Motivation
 
