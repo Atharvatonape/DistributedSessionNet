@@ -1,27 +1,34 @@
-# central-app/Dockerfile
 # Use an official Python runtime as a parent image
 FROM python:3.8-slim
 
-COPY requirements.txt .
-# Set the working directory in the container
-WORKDIR /app
-
+# Install necessary system packages
 RUN apt-get update && apt-get install -y \
     gcc \
     libc-dev
 
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the requirements file
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Gunicorn
+RUN pip install gunicorn
+
 # Copy the current directory contents into the container at /app
 COPY . /app
 
 # Make port 7110 available to the world outside this container
 EXPOSE 7110
 
-# Define environment variable
+# Define environment variables
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=7110
 
-# Command to run the app
-CMD ["python", "app.py"]
+# Command to run the app using Gunicorn
+CMD ["gunicorn", "-b", "0.0.0.0:7110", "--workers", "3", "app:app"]
+

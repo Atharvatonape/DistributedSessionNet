@@ -133,7 +133,7 @@ class TaskManager:
             response = requests.post(url, json=task_data, timeout=5)
             if response.status_code == 200 and response.json().get('received'):
                 self.successful_task += 1
-                socketio.emit('task_completed')
+                socketio.emit('sent_task')
                 self.request_history[worker].append(task_data)  # Storing without the time to simplify the example
                 self.last_active_times[worker] = time.time()
                 return True
@@ -190,6 +190,7 @@ class TaskManager:
                     workers[container_name] = f'http://localhost:{port}'
                     app.logger.info(f"Worker {container_name} created successfully.")
                     time.sleep(1)  # Wait for the worker to start
+                    socketio.emit('task_completed_worker_created')
                     self.worker_states[container_name] = "active"
                     current_workers.append(container_name)
                 except docker.errors.APIError as e:

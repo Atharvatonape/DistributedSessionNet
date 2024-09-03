@@ -17,7 +17,14 @@
                 }
             });
 
-            socket.on('task_completed', function() {
+            socket.on('sent_task', function(data) {
+                document.getElementById("statusMessage").textContent = data.message;
+                if (data.message.includes('created') || data.message.includes('killed')) {
+                    loadWorkers();
+                }
+            });
+
+            socket.on('task_completed_worker_created', function() {
                 fetchDetailedWorkerStatuses();
                 fetchWorkerStatus();  // Refresh worker status when a task is completed
                 loadWorkers();        // Optional: Refresh the worker list if needed
@@ -26,8 +33,8 @@
             document.getElementById('startButton').onclick = function() {
                 var numWorkers = document.getElementById('numWorkersSelect').value;
                 socket.emit('start_create_workers', {num_workers: parseInt(numWorkers, 10)});
-                fetchWorkerStatus();
-                loadWorkers();
+                //fetchWorkerStatus();
+                //loadWorkers();
             };
 
             document.getElementById('killButton').onclick = function() {
@@ -54,7 +61,7 @@
                 $.post('/send_fake_data', function(response) {
                     console.log('Response from server:', response);
                     document.getElementById("statusMessage").textContent = "Fake data sent to " + response.worker;
-                    setTimeout(fetchWorkerStatus, 1200);
+                    //setTimeout(fetchWorkerStatus, 1200);
                 }).fail(function(xhr, status, error) {
                     alert("Failed to send fake data: " + xhr.responseText);
                 });
@@ -95,7 +102,7 @@
 
                         let fetchPromise = $.get(url, function(status) {
                             let requestsHandled = status.requests_handled || 0;
-                            let totalRequests = 2;
+                            let totalRequests = 5;
 
                             let content = `<div class='worker-info'>
                                                 <p><strong>Name:</strong> ${status.name}</p>

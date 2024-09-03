@@ -53,7 +53,7 @@ def receive_data():
             count += 1
 
         # Check if count reached 2 and trigger status change
-        if count >= 2:
+        if count >= 5:
             status_worker = False  # Set worker status to inactive immediately
             app.logger.info("Worker status set to inactive")
 
@@ -65,7 +65,7 @@ def receive_data():
             # Start a timer to reset the worker status after 10 seconds
             if reset_timer is not None:
                 reset_timer.cancel()  # Cancel any existing timer
-            reset_timer = threading.Timer(10.0, reset_worker_status)
+            reset_timer = threading.Timer(30.0, reset_worker_status)
             reset_timer.start()
 
             # response = requests.get(central_app_ip +'/update_status', json=status_data)
