@@ -18,6 +18,7 @@
             });
 
             socket.on('task_completed', function() {
+                fetchDetailedWorkerStatuses();
                 fetchWorkerStatus();  // Refresh worker status when a task is completed
                 loadWorkers();        // Optional: Refresh the worker list if needed
             });
@@ -43,6 +44,7 @@
             };
 
             document.getElementById('getStatusButton').onclick = function() {
+                fetchDetailedWorkerStatuses();
                 fetchWorkerStatus();
                 loadWorkers();
             };
@@ -81,7 +83,7 @@
 
             function fetchWorkerStatus() {
                 for (let i = 1; i <= 5; i++) {
-                    document.getElementById(`workerStatus${i}`).innerHTML = 'Loading...';
+                    document.getElementById(`workerStatus${i}`).innerHTML = 'Not Active';
                 }
 
                 $.getJSON('/workers', function(workers) {
@@ -135,6 +137,55 @@
                 });
             }
 
+            function fetchDetailedWorkerStatuses() {
+                $('#detailedWorkerStatusContainer').html('<p>Loading detailed statuses...</p>');
+
+                // Define the list of all workers
+                const workers = ['worker_1', 'worker_2', 'worker_3', 'worker_4', 'worker_5'];
+
+                let content = '<h2>Detailed Worker Statuses</h2>';
+
+                // Iterate through the predefined list of workers
+                workers.forEach(function(workerName) {
+                    let url = `/worker_status2/${workerName}`;
+
+                    $.get(url, function(status) {
+                        let tableContent = `<div class='worker-details'>
+                                            <h3>Status for ${workerName} - Active: ${status.active ? 'Yes' : 'No'}</h3>
+                                            <table class='worker-status-table'>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Job</th>
+                                                    <th>Address</th>
+                                                    <th>Phone Number</th>
+                                                    <th>Company</th>
+                                                    <th>Text</th>
+                                                </tr>`;
+                        status.request_history.forEach(function(request) {
+                            tableContent += `<tr>
+                                                <td>${request.name}</td>
+                                                <td>${request.email}</td>
+                                                <td>${request.job}</td>
+                                                <td>${request.address}</td>
+                                                <td>${request.phone_number}</td>
+                                                <td>${request.company}</td>
+                                                <td>${request.text}</td>
+                                            </tr>`;
+                        });
+                        tableContent += '</table></div>';
+                        content += tableContent;
+
+                        $('#detailedWorkerStatusContainer').html(content);
+                    }).fail(function() {
+                        $('#detailedWorkerStatusContainer').append(`<div><p>Failed to load data for ${workerName}</p></div>`);
+                    });
+                });
+            }
+
+
+
+
         });
     </script>
 </head>
@@ -180,5 +231,11 @@
         <div id="workerStatus4" class="worker-status">No active worker</div>
         <div id="workerStatus5" class="worker-status">No active worker</div>
     </div>
+    <!-- Detailed Worker Status Container -->
+    <div id="detailedWorkerStatusContainer">
+        <h2>Detailed Worker Statuses</h2>
+        <div id="allDetailedStatuses"></div>
+    </div>
+
 </body>
 </html>

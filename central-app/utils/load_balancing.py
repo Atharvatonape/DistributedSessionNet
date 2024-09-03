@@ -8,6 +8,7 @@ import time
 import docker
 import logging
 import queue
+import collections
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -34,6 +35,7 @@ class TaskManager:
                 cls._instance = super(TaskManager, cls).__new__(cls)
                 cls._instance.worker_states = {f"worker_{i+1}": "inactive" for i in range(5)}
                 cls._instance.last_active_times = {f"worker_{i+1}": time.time() for i in range(5)}
+                cls._instance.request_history = collections.defaultdict(lambda: collections.deque(maxlen=5))
                 cls._instance.task_queue = queue.Queue()
                 cls._instance.client = docker.from_env()
                 cls._instance.base_port = 5001
@@ -111,8 +113,8 @@ class TaskManager:
             container.stop()
             container.remove()
             app.logger.info(f"Deleted idle worker: {worker}")
-            #self.worker_states.pop(worker, None)
-            self.last_active_times.pop(worker, None)
+            self.worker_states.pop(worker, None)
+            # Do not clear history here, allowing it to persist
         except docker.errors.NotFound:
             app.logger.warning(f"Worker {worker} not found for deletion.")
         except Exception as e:
@@ -132,11 +134,11 @@ class TaskManager:
             if response.status_code == 200 and response.json().get('received'):
                 self.successful_task += 1
                 socketio.emit('task_completed')
+                self.request_history[worker].append(task_data)  # Storing without the time to simplify the example
                 self.last_active_times[worker] = time.time()
                 return True
             else:
                 self.update_worker_state(worker, 'inactive')
-                #app.logger.warning(f"Task not properly received by {worker}")
         except requests.exceptions.RequestException as e:
             app.logger.error(f"Error sending task to {worker}: {e}")
             self.update_worker_state(worker, 'error')
