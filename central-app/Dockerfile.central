@@ -15,8 +15,8 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Gunicorn
-RUN pip install gunicorn
+# Install Waitress
+RUN pip install waitress
 
 # Copy the current directory contents into the container at /app
 COPY . /app
@@ -29,6 +29,5 @@ ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=7110
 
-# Command to run the app using Gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:7110", "--workers", "3", "app:app"]
-
+# Command to run the app using Waitress
+CMD ["waitress-serve", "--port=7110",  "app:app"]

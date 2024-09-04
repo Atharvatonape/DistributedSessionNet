@@ -7,3 +7,4 @@ faker
 gunicorn==20.0.4
 flask-cors
 APScheduler
+waitress

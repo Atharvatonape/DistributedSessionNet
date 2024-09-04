@@ -4,69 +4,77 @@
     <meta charset="UTF-8">
     <title>Create and Manage Workers</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
-            socket.on('update', function(data) {
-                document.getElementById("statusMessage").textContent = data.message;
-                if (data.message.includes('created') || data.message.includes('killed')) {
-                    loadWorkers();
-                }
-            });
-
-            socket.on('sent_task', function(data) {
-                document.getElementById("statusMessage").textContent = data.message;
-                if (data.message.includes('created') || data.message.includes('killed')) {
-                    loadWorkers();
-                }
-            });
-
-            socket.on('task_completed_worker_created', function() {
-                fetchDetailedWorkerStatuses();
-                fetchWorkerStatus();  // Refresh worker status when a task is completed
-                loadWorkers();        // Optional: Refresh the worker list if needed
-            });
+            // Poll the backend every 5 seconds to fetch the latest worker status
+            setInterval(function() {
+                fetchWorkerStatus();
+            }, 5000);
 
             document.getElementById('startButton').onclick = function() {
                 var numWorkers = document.getElementById('numWorkersSelect').value;
-                socket.emit('start_create_workers', {num_workers: parseInt(numWorkers, 10)});
-                //fetchWorkerStatus();
-                //loadWorkers();
+                $.ajax({
+                    url: '/create_workers',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({num_workers: parseInt(numWorkers, 10)}),
+                    success: function(response) {
+                        document.getElementById("statusMessage").textContent = response.message;
+                        loadWorkers(); // Refresh worker list after creation
+                    },
+                    error: function(xhr, status, error) {
+                        alert("Error creating workers: " + xhr.responseText);
+                    }
+                });
             };
 
             document.getElementById('killButton').onclick = function() {
                 var selectedWorker = document.getElementById('workerSelect').value;
                 if (selectedWorker === "Select All") {
-                    socket.emit('kill_all_workers');
+                    $.post('/kill_all_workers', function(response) {
+                        document.getElementById("statusMessage").textContent = response.message;
+                        loadWorkers(); // Refresh worker list after killing
+                    }).fail(function(xhr, status, error) {
+                        alert("Error killing all workers: " + xhr.responseText);
+                    });
                 } else {
-                    socket.emit('kill_worker', {worker_name: selectedWorker});
+                    $.ajax({
+                        url: '/kill_worker',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({worker_name: selectedWorker}),
+                        success: function(response) {
+                            document.getElementById("statusMessage").textContent = response.message;
+                            loadWorkers(); // Refresh worker list after killing
+                        },
+                        error: function(xhr, status, error) {
+                            alert("Error killing worker: " + xhr.responseText);
+                        }
+                    });
                 }
             };
 
             document.getElementById('refreshButton').onclick = function() {
-                loadWorkers();
+                loadWorkers();  // Manually trigger worker refresh
             };
 
             document.getElementById('getStatusButton').onclick = function() {
-                fetchDetailedWorkerStatuses();
-                fetchWorkerStatus();
-                loadWorkers();
+                fetchWorkerStatus(); // Manually get worker status
+                loadWorkers(); // Manually get worker list
+                fetchDetailedWorkerStatuses(); // Manually get detailed status
             };
 
             document.getElementById('sendFakeDataButton').onclick = function() {
-                // Request the backend to generate fake data and send it to the worker
                 $.post('/send_fake_data', function(response) {
-                    console.log('Response from server:', response);
-                    document.getElementById("statusMessage").textContent = "Fake data sent to " + response.worker;
-                    //setTimeout(fetchWorkerStatus, 1200);
+                    document.getElementById("statusMessage").textContent = "Fake data sent successfully!";
                 }).fail(function(xhr, status, error) {
                     alert("Failed to send fake data: " + xhr.responseText);
                 });
             };
 
+            // Fetch worker status from the backend
             function loadWorkers() {
                 $.getJSON('/workers_get', function(data) {
                     // Update metrics
@@ -102,7 +110,7 @@
 
                         let fetchPromise = $.get(url, function(status) {
                             let requestsHandled = status.requests_handled || 0;
-                            let totalRequests = 5;
+                            let totalRequests = 2;
 
                             let content = `<div class='worker-info'>
                                                 <p><strong>Name:</strong> ${status.name}</p>
@@ -191,8 +199,8 @@
             }
 
 
-
-
+            // Initial load of workers when the page is loaded
+            loadWorkers();
         });
     </script>
 </head>
@@ -238,6 +246,7 @@
         <div id="workerStatus4" class="worker-status">No active worker</div>
         <div id="workerStatus5" class="worker-status">No active worker</div>
     </div>
+
     <!-- Detailed Worker Status Container -->
     <div id="detailedWorkerStatusContainer">
         <h2>Detailed Worker Statuses</h2>

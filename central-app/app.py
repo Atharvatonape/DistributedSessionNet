@@ -1,22 +1,13 @@
 from flask import Flask, render_template, jsonify, request
-from flask_socketio import SocketIO, emit
 import docker
-from utils.docker_containers import get_running_container_names, get_urls_of_running_containers
+from utils.docker_containers import get_running_container_names
 from utils.fake_data import fake_data_gen
-from utils.load_balancing import round_robin, TaskManager
+from utils.load_balancing import TaskManager
 import requests
 import logging
-#from flask_cors import CORS
-from utils.tets import get_worker_ip_map
-import collections
-import time
-
 
 app = Flask(__name__)
-#CORS(app)
-socketio = SocketIO(app)
 client = docker.from_env()
-workers_status = {}
 app.logger.setLevel(logging.INFO)
 
 @app.after_request
@@ -31,45 +22,37 @@ def after_request(response):
 def index():
     return render_template('create_workers.html')
 
-@socketio.on('start_create_workers')
-def handle_create_workers(data):
-    num_workers = data.get('num_workers', 2)
-    emit('update', {'message': f'Creating {num_workers} workers...'}, broadcast=True)
+@app.route('/create_workers', methods=['POST'])
+def create_workers():
+    num_workers = request.json.get('num_workers', 2)
     task_manager = TaskManager()
-    # Delegate worker creation to the TaskManager
     workers = task_manager.create_workers(num_workers)
+    response = {'message': f'{num_workers} workers created', 'workers': workers}
+    return jsonify(response)
 
-    for worker_name, url in workers.items():
-        emit('update', {'message': f'{worker_name} created at {url}'}, broadcast=True)
-
-    emit('update', {'message': f'{num_workers} workers created'}, broadcast=True)
-
-@socketio.on('kill_worker')
-def handle_kill_worker(data):
-    worker_name = data['worker_name']
-    emit('update', {'message': f'Killing {worker_name}...'}, broadcast=True)
+@app.route('/kill_worker', methods=['POST'])
+def kill_worker():
+    worker_name = request.json['worker_name']
     try:
         container = client.containers.get(worker_name)
         container.stop()
         container.remove()
         app.logger.info(f"Worker {worker_name} killed")
-        emit('update', {'message': f'{worker_name} successfully killed'}, broadcast=True)
+        return jsonify({'message': f'{worker_name} successfully killed'}), 200
     except Exception as e:
-        emit('update', {'message': f'Error killing {worker_name}: {str(e)}'}, broadcast=True)
+        return jsonify({'message': f'Error killing {worker_name}: {str(e)}'}), 500
 
-@socketio.on('kill_all_workers')
-def handle_kill_all_workers():
-    emit('update', {'message': 'Killing all workers...'}, broadcast=True)
+@app.route('/kill_all_workers', methods=['POST'])
+def kill_all_workers():
     containers = client.containers.list()  # List all containers
     for container in containers:
         if "worker_" in container.name:
             try:
                 container.stop()
                 container.remove()
-                emit('update', {'message': f'{container.name} successfully killed'}, broadcast=True)
             except Exception as e:
-                emit('update', {'message': f'Error killing {container.name}: {str(e)}'}, broadcast=True)
-    emit('update', {'message': 'All workers have been killed'}, broadcast=True)
+                return jsonify({'message': f'Error killing {container.name}: {str(e)}'}), 500
+    return jsonify({'message': 'All workers have been killed'}), 200
 
 @app.route('/workers', methods=['GET'])
 def workers():
@@ -131,17 +114,14 @@ def get_workers():
     })
 
 
+
 @app.route('/send_fake_data', methods=['POST'])
 def send_fake_data():
     try:
         fake_data = fake_data_gen()
         task_manager = TaskManager()
-        #app.logger.info(f"Worker states: {task_manager.worker_states}")
-        app.logger.info(f"Before Loading: {len(task_manager.task_list)}, {len(task_manager.task_list_duplicate)}")
         task_manager.load_task(fake_data)
         response = 'response'
-        app.logger.info(f"After Loading: {len(task_manager.task_list)}, {len(task_manager.task_list_duplicate)}")
-        #app.logger.info(f"Response: {response}")
         return jsonify(response)
     except requests.exceptions.RequestException as e:
         return jsonify({"success": False, "message": str(e)}), 500
@@ -151,23 +131,12 @@ def status():
     data = request.json
     worker_id = data.get('name')
     state = data.get('active')
-    if state == True or state == "True":
-        state = "active"
-    try:
-        identifier = data.get('identifier')
-        #app.logger.info(f"Received update status request with Reset data: {identifier}")
-        #app.logger.info(f"Data: {data}")
-    except:
-        pass
+    state = "active" if state in [True, "True"] else state
 
     task_manager = TaskManager()
     task_manager.update_worker_state(worker_id, state)
-    #app.logger.info(f"Received update status request with data: \n{data}")
-    #app.logger.info(f"Worker state updated: {worker_id} - {state}")
-    #app.logger.info(f"Worker states: {task_manager.worker_states}")
-    return jsonify({"success": True, "message": "Worker state updated"})
+    return jsonify({"success": True, "message": "Worker state updated"}), 200
 
 
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=7110, ssl_context=('cert.pem', 'key.pem'))
+# if __name__ == '__main__':
+#     app.run(debug=True, host='0.0.0.0', port=7110)
