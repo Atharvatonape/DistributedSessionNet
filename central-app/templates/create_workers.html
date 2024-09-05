@@ -14,6 +14,7 @@
             }, 5000);
 
             document.getElementById('startButton').onclick = function() {
+                event.preventDefault();
                 var numWorkers = document.getElementById('numWorkersSelect').value;
                 $.ajax({
                     url: '/create_workers',
@@ -31,6 +32,7 @@
             };
 
             document.getElementById('killButton').onclick = function() {
+                event.preventDefault();
                 var selectedWorker = document.getElementById('workerSelect').value;
                 if (selectedWorker === "Select All") {
                     $.post('/kill_all_workers', function(response) {
@@ -57,16 +59,19 @@
             };
 
             document.getElementById('refreshButton').onclick = function() {
+                event.preventDefault();
                 loadWorkers();  // Manually trigger worker refresh
             };
 
             document.getElementById('getStatusButton').onclick = function() {
+                event.preventDefault();
                 fetchWorkerStatus(); // Manually get worker status
                 loadWorkers(); // Manually get worker list
                 fetchDetailedWorkerStatuses(); // Manually get detailed status
             };
 
             document.getElementById('sendFakeDataButton').onclick = function() {
+                event.preventDefault();
                 $.post('/send_fake_data', function(response) {
                     document.getElementById("statusMessage").textContent = "Fake data sent successfully!";
                 }).fail(function(xhr, status, error) {
@@ -128,7 +133,7 @@
                             document.getElementById(`workerStatus${index + 1}`).innerHTML = 'Failed to load data';
                         });
 
-                        allPromises.push(fetchPromise);
+                        //allPromises.push(fetchPromise);
                     });
 
                     Promise.all(allPromises).then(results => {
@@ -198,9 +203,6 @@
                 });
             }
 
-
-            // Initial load of workers when the page is loaded
-            loadWorkers();
         });
     </script>
 </head>

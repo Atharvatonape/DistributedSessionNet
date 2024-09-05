@@ -71,10 +71,11 @@ class TaskManager:
             #app.logger.info(f"Active workers: {active_workers}, Last active times: {self.last_active_times[active_workers[0]]}")
             # If there are no active workers and the total count of workers is less than 5
             if not active_workers and len(get_running_container_names()) < 5:
-                app.logger.info("No active workers found. Attempting to create new worker.")
-                name = len(get_running_container_names()) + 1
-                self.create_workers(1, name)
-                app.logger.info(f"All workers are inactive. Attempting to create new worker: worker_{name}")
+                if len(get_running_container_names()) > 0:
+                    app.logger.info("No active workers found. Attempting to create new worker.")
+                    name = len(get_running_container_names()) + 1
+                    self.create_workers(1, name)
+                    app.logger.info(f"All workers are inactive. Attempting to create new worker: worker_{name}")
 
             # Additionally, handle scenario where all workers are inactive but the max limit hasn't been reached
             elif all(state != 'active' for state in self.worker_states.values()) and len(self.worker_states) < 5:
@@ -189,6 +190,7 @@ class TaskManager:
                     app.logger.info(f"Worker {container_name} created successfully.")
                     time.sleep(1)  # Wait for the worker to start
                     self.worker_states[container_name] = "active"
+                    self.last_active_times[container_name] = time.time()
                     current_workers.append(container_name)
                 except docker.errors.APIError as e:
                     app.logger.error(f"Failed to create worker {container_name}: {e}")

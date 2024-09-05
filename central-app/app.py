@@ -78,7 +78,7 @@ def worker_status2(worker_name):
     try:
         # Retrieve the worker's history from the defaultdict
         worker_history = task_manager.request_history[worker_name]
-        app.logger.info(f"Worker history for {worker_name}: {worker_history}")
+        #app.logger.info(f"Worker history for {worker_name}: {worker_history}")
 
         # Process the history to extract the task data
         history_data = [
@@ -138,5 +138,5 @@ def status():
     return jsonify({"success": True, "message": "Worker state updated"}), 200
 
 
-# if __name__ == '__main__':
-#     app.run(debug=True, host='0.0.0.0', port=7110)
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=7110)
