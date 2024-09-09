@@ -208,52 +208,65 @@
 </head>
 <body>
     <h1>Inhouse Redis</h1>
-    <select id="numWorkersSelect">
-        <option value="1">1 Worker</option>
-        <option value="2">2 Workers</option>
-        <option value="3">3 Workers</option>
-        <option value="4">4 Workers</option>
-        <option value="5">5 Workers</option>
-    </select>
-    <button id="startButton">Create Workers</button>
-    <button id="refreshButton">Refresh Active Containers</button>
-    <button id="getStatusButton">Get Worker Status</button>
-    <button id="sendFakeDataButton">Send Fake Data to Node</button>
-    <button id="killButton">Kill Selected Worker</button>
-    <select id="workerSelect"><option>Select All</option></select>
-    <p id="statusMessage">Ready to create or kill workers.</p>
 
-    <!-- Task Metrics Container -->
-    <div class="task-metrics-container">
-        <div class="metric-box">
-            <h4>Active Workers:</h4>
-            <p id="activeWorkers">0</p>
+    <!-- Main Container for side-by-side layout -->
+    <div class="main-container">
+        <!-- Manage Worker Section -->
+        <div class="manage-workers-section">
+            <h2>Manage Workers</h2>
+            <select id="numWorkersSelect">
+                <option value="1">1 Worker</option>
+                <option value="2">2 Workers</option>
+                <option value="3">3 Workers</option>
+                <option value="4">4 Workers</option>
+                <option value="5">5 Workers</option>
+            </select>
+            <button id="startButton">Create Workers</button>
+            <button id="killButton">Kill Selected Worker</button>
+            <button id="refreshButton">Refresh Active Containers</button>
+            <button id="getStatusButton">Get Worker Status</button>
+            <button id="sendFakeDataButton">Send Fake Data to Node</button>
+            <select id="workerSelect"><option>Select All</option></select>
+            <p id="statusMessage">Ready to create or kill workers.</p>
+
+            <!-- Task Metrics Container -->
+            <div class="task-metrics-container">
+                <div class="metric-box">
+                    <h4>Active Workers:</h4>
+                    <p id="activeWorkers">0</p>
+                </div>
+                <div class="metric-box">
+                    <h4>Successful Tasks:</h4>
+                    <p id="successfulTasks">0</p>
+                </div>
+                <div class="metric-box">
+                    <h4>Total Tasks:</h4>
+                    <p id="taskListDuplicates">0</p>
+                </div>
+            </div>
+
+            <div id="activeWorkersList"></div>
         </div>
-        <div class="metric-box">
-            <h4>Successful Tasks:</h4>
-            <p id="successfulTasks">0</p>
-        </div>
-        <div class="metric-box">
-            <h4>Total Tasks:</h4>
-            <p id="taskListDuplicates">0</p>
+
+        <!-- Status and Send Data Section -->
+        <div class="status-send-data-section">
+            <h2>Status and Send Data</h2>
+            <div class="worker-status-container">
+                <div id="workerStatus1" class="worker-status">No active worker</div>
+                <div id="workerStatus2" class="worker-status">No active worker</div>
+                <div id="workerStatus3" class="worker-status">No active worker</div>
+                <div id="workerStatus4" class="worker-status">No active worker</div>
+                <div id="workerStatus5" class="worker-status">No active worker</div>
+            </div>
+
+
         </div>
     </div>
-
-    <div id="activeWorkersList"></div>
-
-    <div class="worker-status-container">
-        <div id="workerStatus1" class="worker-status">No active worker</div>
-        <div id="workerStatus2" class="worker-status">No active worker</div>
-        <div id="workerStatus3" class="worker-status">No active worker</div>
-        <div id="workerStatus4" class="worker-status">No active worker</div>
-        <div id="workerStatus5" class="worker-status">No active worker</div>
-    </div>
-
-    <!-- Detailed Worker Status Container -->
+            <!-- Detailed Worker Status Container -->
     <div id="detailedWorkerStatusContainer">
         <h2>Detailed Worker Statuses</h2>
         <div id="allDetailedStatuses"></div>
     </div>
-
 </body>
+
 </html>

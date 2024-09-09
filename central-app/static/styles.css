@@ -232,3 +232,33 @@ input[type="checkbox"]:focus {
     color: #666; /* Darker text for better readability */
     line-height: 1.5; /* Increased line height for more readable text */
 }
+
+/* Main container for side-by-side layout */
+.main-container {
+    display: flex; /* Display the sections side by side */
+    justify-content: space-between; /* Add some space between the sections */
+    gap: 20px; /* Optional: gap between the two sections */
+    margin-top: 20px;
+}
+
+/* Style for each section */
+.manage-workers-section, .status-send-data-section {
+    flex: 1; /* Make both sections take equal space */
+    background-color: #ffffff; /* White background for clarity */
+    padding: 20px; /* Add some padding */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
+}
+
+/* Ensure the sections don't shrink too much */
+.manage-workers-section, .status-send-data-section {
+    min-width: 300px; /* Prevent sections from shrinking too much */
+}
+
+/* Additional styling for small screens */
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column; /* Stack sections vertically on small screens */
+    }
+}
+
