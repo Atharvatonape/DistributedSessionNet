@@ -110,9 +110,21 @@ def get_workers():
     return jsonify({
         'activeWorkers': active_count,
         'successfulTasks': task_manager.successful_task,
-        'taskListDuplicateCount': len(task_manager.task_list_duplicate)
+        'taskListDuplicateCount': len(task_manager.task_list_duplicate),
+        'workers': workers
     })
 
+
+@app.route('/idle_time', methods=['POST'])
+def idle_time():
+    data = request.json
+    app.logger.info(f"Data received: {data}")
+    idle_time = data.get('idletime')
+    app.logger.info(f"Idle Time: {idle_time}")
+    task_manager = TaskManager()  # Assuming singleton pattern
+    task_manager.idle_time = idle_time
+    app.logger.info(f"Idle Time set to {task_manager.idle_time}")
+    return jsonify({"success": True, "message": f"Workers will get deleted after remaining idle for {idle_time} sec"}), 200
 
 
 @app.route('/send_fake_data', methods=['POST'])

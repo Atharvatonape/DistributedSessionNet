@@ -262,3 +262,110 @@ input[type="checkbox"]:focus {
     }
 }
 
+#refreshButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: transparent;
+    font-size: 24px; /* Adjust size as needed */
+    cursor: pointer;
+    color: #007aff; /* Styling button color to match your theme */
+}
+
+#refreshButton:hover {
+    color: #005bb5; /* Darker blue on hover for visual feedback */
+}
+
+/* Buttons and Select dropdown styling */
+select, button {
+    width: 180px; /* Ensure same width for both */
+    height: 38px; /* Uniform height */
+    line-height: 24px; /* Adjust line height to center text vertically */
+    margin: 5px;
+    padding: 7px 12px; /* Adjusted padding for consistency */
+    border-radius: 8px; /* Rounded corners */
+    border: 1px solid #007aff; /* Add border to make select visually similar to button */
+    font-size: 16px; /* Consistent font size */
+    cursor: pointer;
+    display: inline-block; /* Align items horizontally */
+    background-color: #007aff; /* Consistent background for buttons */
+    color: #ffffff; /* White text for contrast */
+    transition: all 0.2s ease; /* Smooth transitions for hover effects */
+}
+
+button {
+    background-color: #007aff; /* Apple's signature blue */
+    border: 1px solid #007aff; /* Consistent border style */
+}
+
+button:hover {
+    background-color: #005bb5; /* Slightly darker on hover */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Soft shadow for depth */
+}
+
+select {
+    background-color: #ffffff; /* White background for select */
+    color: #1d1d1f; /* Dark color for text */
+}
+
+select:hover {
+    border-color: #005bb5; /* Darker border on hover for select */
+}
+
+/* Flexbox setup for aligning button and select */
+.button-select-pair {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+/* Additional customizations may be necessary depending on other styles in your CSS or specific layout requirements. */
+/* Flexbox setup for aligning button and select within their pairs */
+.button-select-pair {
+    display: flex;
+    justify-content: center;  /* Center horizontally */
+    align-items: center;       /* Center vertically */
+    margin: 10px 0;            /* Add vertical margin for spacing */
+}
+
+.manage-workers-section {
+    display: flex;
+    flex-direction: column;   /* Stack child elements vertically */
+    align-items: center;      /* Align child elements in the center */
+    justify-content: center;  /* Center content vertically */
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Adjust the overall alignment and spacing in the main container */
+.main-container {
+    display: flex;
+    justify-content: space-around; /* Space around to add space between the two sections */
+    align-items: start;            /* Align items at the start of the container */
+    flex-wrap: wrap;               /* Allow items to wrap in smaller screens */
+    margin: 20px;                  /* Outer margin for spacing */
+    padding: 20px;                 /* Padding inside the container */
+}
+
+/* Ensure that the container elements are also centered */
+.status-send-data-section, .manage-workers-section {
+    width: 45%;                    /* Set a specific width for each section */
+    margin: 10px;                  /* Margin around each section for spacing */
+    padding: 20px;                 /* Padding inside each section */
+    display: flex;
+    flex-direction: column;        /* Stack the contents vertically */
+    align-items: center;           /* Align items in the center */
+    justify-content: space-between;/* Space the internal items evenly */
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;   /* Stack sections vertically on small screens */
+    }
+    .status-send-data-section, .manage-workers-section {
+        width: 100%;              /* Each section takes full width on small screens */
+    }
+}

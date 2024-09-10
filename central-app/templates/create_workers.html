@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Create and Manage Workers</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -21,6 +22,24 @@
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({num_workers: parseInt(numWorkers, 10)}),
+                    success: function(response) {
+                        document.getElementById("statusMessage").textContent = response.message;
+                        loadWorkers(); // Refresh worker list after creation
+                    },
+                    error: function(xhr, status, error) {
+                        alert("Error creating workers: " + xhr.responseText);
+                    }
+                });
+            };
+
+            document.getElementById('idleButton').onclick = function() {
+                event.preventDefault();
+                var idle_time = document.getElementById('idle_time_select').value;
+                $.ajax({
+                    url: '/idle_time',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({idletime: parseInt(idle_time, 10)}),
                     success: function(response) {
                         document.getElementById("statusMessage").textContent = response.message;
                         loadWorkers(); // Refresh worker list after creation
@@ -58,17 +77,19 @@
                 }
             };
 
-            document.getElementById('refreshButton').onclick = function() {
-                event.preventDefault();
-                loadWorkers();  // Manually trigger worker refresh
-            };
+            document.getElementById('refreshButton').addEventListener('click', function() {
+                fetchWorkerStatus();
+                loadWorkers();
+                fetchDetailedWorkerStatuses(); // Trigger getStatusButton functionality
+            });
 
-            document.getElementById('getStatusButton').onclick = function() {
-                event.preventDefault();
-                fetchWorkerStatus(); // Manually get worker status
-                loadWorkers(); // Manually get worker list
-                fetchDetailedWorkerStatuses(); // Manually get detailed status
-            };
+
+            // document.getElementById('getStatusButton').onclick = function() {
+            //     event.preventDefault();
+            //     fetchWorkerStatus(); // Manually get worker status
+            //     loadWorkers(); // Manually get worker list
+            //     fetchDetailedWorkerStatuses(); // Manually get detailed status
+            // };
 
             document.getElementById('sendFakeDataButton').onclick = function() {
                 event.preventDefault();
@@ -80,28 +101,46 @@
             };
 
             // Fetch worker status from the backend
-            function loadWorkers() {
-                $.getJSON('/workers_get', function(data) {
-                    // Update metrics
-                    document.getElementById('activeWorkers').textContent = data.activeWorkers;
-                    document.getElementById('successfulTasks').textContent = data.successfulTasks;
-                    document.getElementById('taskListDuplicates').textContent = data.taskListDuplicateCount;
+        function loadWorkers() {
+            console.log('Fetching worker data... loadWorkers()');
+            $.getJSON('/workers_get', function(data) {
+                console.log('Data received:', data);  // Check what data is received
 
-                    // Update worker list (if needed)
-                    var select = document.getElementById('workerSelect');
-                    var workerList = document.getElementById('activeWorkersList');
-                    select.innerHTML = '<option>Select All</option>';
-                    workerList.innerHTML = `<h3>Active Workers: ${data.activeWorkers}</h3>`;
+                // Update metrics
+                document.getElementById('activeWorkers').textContent = data.activeWorkers;
+                document.getElementById('successfulTasks').textContent = data.successfulTasks;
+                document.getElementById('taskListDuplicates').textContent = data.taskListDuplicateCount;
 
+                var workerList = document.getElementById('activeWorkersList');
+                workerList.innerHTML = `<h3>Active Workers: ${data.activeWorkers}</h3>`;
+
+                // Clear existing options in the worker select dropdown for killing workers
+                var killWorkerSelect = document.getElementById('workerSelect');
+                killWorkerSelect.innerHTML = '';  // Clear existing options
+
+                // Check if there are workers and add options accordingly
+                if (data.workers && data.workers.length > 0) {
+                    if (data.workers.length > 1) {
+                        killWorkerSelect.add(new Option("Select All", "Select All"));
+                    }
+
+                    // Add new active workers to the kill dropdown
                     data.workers.forEach(function(worker) {
                         var option = new Option(worker, worker);
-                        select.add(option);
-                        workerList.innerHTML += `<li>${worker}</li>`;
+                        killWorkerSelect.add(option);
+                        workerList.innerHTML += `<li>${worker}</li>`;  // Also update the worker list display
                     });
-                });
-            }
+                } else {
+                    console.log('No workers found');
+                }
+            }).fail(function(jqxhr, textStatus, error) {
+                var err = textStatus + ", " + error;
+                console.log("Request Failed: " + err);
+            });
+        }
 
             function fetchWorkerStatus() {
+                console.log('Fetching worker status... fetchWorkerStatus()');
                 for (let i = 1; i <= 5; i++) {
                     document.getElementById(`workerStatus${i}`).innerHTML = 'Not Active';
                 }
@@ -115,7 +154,7 @@
 
                         let fetchPromise = $.get(url, function(status) {
                             let requestsHandled = status.requests_handled || 0;
-                            let totalRequests = 2;
+                            let totalRequests = 5;
 
                             let content = `<div class='worker-info'>
                                                 <p><strong>Name:</strong> ${status.name}</p>
@@ -158,6 +197,7 @@
             }
 
             function fetchDetailedWorkerStatuses() {
+                console.log('Fetching detailed worker statuses... fetchDetailedWorkerStatuses()');
                 $('#detailedWorkerStatusContainer').html('<p>Loading detailed statuses...</p>');
 
                 // Define the list of all workers
@@ -207,24 +247,44 @@
     </script>
 </head>
 <body>
-    <h1>Inhouse Redis</h1>
+    <h1>Redis Pro Maxx</h1>
 
     <!-- Main Container for side-by-side layout -->
     <div class="main-container">
         <!-- Manage Worker Section -->
-        <div class="manage-workers-section">
+        <div class="manage-workers-section", style="position: relative;">
+            <button id="refreshButton" style="position: absolute; top: 10px; right: 10px; border: none; background: none; font-size: 24px; cursor: pointer;">
+                <i class="fas fa-sync-alt"></i>
+            </button>
             <h2>Manage Workers</h2>
-            <select id="numWorkersSelect">
-                <option value="1">1 Worker</option>
-                <option value="2">2 Workers</option>
-                <option value="3">3 Workers</option>
-                <option value="4">4 Workers</option>
-                <option value="5">5 Workers</option>
-            </select>
-            <button id="startButton">Create Workers</button>
-            <button id="killButton">Kill Selected Worker</button>
-            <button id="refreshButton">Refresh Active Containers</button>
-            <select id="workerSelect"><option>Select All</option></select>
+            <div class="button-select-pair">
+                <button id="startButton">Create Workers</button>
+                <select id="numWorkersSelect">
+                    <option value="1">1 Worker</option>
+                    <option value="2">2 Workers</option>
+                    <option value="3">3 Workers</option>
+                    <option value="4">4 Workers</option>
+                    <option value="5">5 Workers</option>
+                </select>            </div>
+
+            <div class="button-select-pair">
+                <button id="idleButton">Idle Time</button>
+                <select id="idle_time_select">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="40">40</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+
+            <div class="button-select-pair">
+                <button id="killButton">Kill Worker</button>
+                <select id="workerSelect">  <!-- Changed ID -->
+                    <!-- Options will be dynamically added here -->
+                </select>
+            </div>
+
             <p id="statusMessage">Ready to create or kill workers.</p>
             <!-- Task Metrics Container -->
             <div class="task-metrics-container">
@@ -241,13 +301,13 @@
                     <p id="taskListDuplicates">0</p>
                 </div>
             </div>
-            <button id="getStatusButton">Get Worker Status</button>
-            <button id="sendFakeDataButton">Send Fake Data to Node</button>
             <div id="activeWorkersList"></div>
         </div>
 
         <!-- Status and Send Data Section -->
         <div class="status-send-data-section">
+            <!-- <button id="getStatusButton">Get Worker Status</button> -->
+            <button id="sendFakeDataButton">Send Fake Data </button>
             <h2>Status and Send Data</h2>
             <div class="worker-status-container">
                 <div id="workerStatus1" class="worker-status">No active worker</div>

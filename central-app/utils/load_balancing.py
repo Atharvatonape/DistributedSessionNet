@@ -39,6 +39,7 @@ class TaskManager:
                 cls._instance.client = docker.from_env()
                 cls._instance.base_port = 5001
                 cls._instance.limit_try = 0
+                cls._instance.idle_time = 60
                 cls._instance.successful_task = 0
                 cls._instance.task_list_duplicate = []
                 cls._instance.task_list = []
@@ -95,14 +96,13 @@ class TaskManager:
             except queue.Empty:
                 continue
 
-    def _check_idle_workers(self):
-        idle_limit = 60  # Idle time limit in seconds
+    def _check_idle_workers(self):  # Idle time limit in seconds
         while True:
             current_time = time.time()
             running_containers = get_running_container_names()  # Get currently running container names
             with self._lock:
                 for worker, last_active in list(self.last_active_times.items()):
-                    if (current_time - last_active > idle_limit and
+                    if (current_time - last_active > self.idle_time and
                         worker in running_containers):  # Ensure worker is still running
                         self.delete_worker(worker)
                 time.sleep(1)
