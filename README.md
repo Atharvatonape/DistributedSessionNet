@@ -7,7 +7,7 @@
 
 ## Motivation
 
-In many systems, handling fluctuating workloads while maintaining efficiency and cost-effectiveness can be challenging. Traditional load balancers distribute tasks but often require manual intervention or external systems to manage worker processes. DPLB addresses this challenge by automatically scaling worker processes in response to the load, ensuring that resources are used effectively without unnecessary overhead. This makes it an ideal solution for environments where workloads are highly variable and need to be managed in real-time.
+In many systems, handling fluctuating workloads while maintaining efficiency and cost-effectiveness can be challenging. Traditional load balancers distribute tasks but often require manual intervention or external systems to manage worker processes. Redis-Pro-Maxx addresses this challenge by automatically scaling worker processes in response to the load, ensuring that resources are used effectively without unnecessary overhead. This makes it an ideal solution for environments where workloads are highly variable and need to be managed in real-time.
 
 ## Technologies Used
 
@@ -38,8 +38,8 @@ In many systems, handling fluctuating workloads while maintaining efficiency and
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/dplb.git
-cd dplb
+git clone https://github.com/yourusername/Redis-Pro-Maxx.git
+cd Redis-Pro-Maxx
 ```
 
 ### Step 2: Set Up a Virtual Environment
@@ -83,8 +83,8 @@ The application should now be running at `http://127.0.0.1:5000/`.
 Build and run the Docker container.
 
 ```bash
-docker build -t dplb .
-docker run -p 5000:5000 dplb
+docker build -t Redis-Pro-Maxx .
+docker run -p 5000:5000 Redis-Pro-Maxx
 ```
 
 ### Step 7: Deploy to AWS
@@ -95,8 +95,8 @@ docker run -p 5000:5000 dplb
 
 ```bash
 aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin your-account-id.dkr.ecr.your-region.amazonaws.com
-docker tag dplb:latest your-account-id.dkr.ecr.your-region.amazonaws.com/dplb:latest
-docker push your-account-id.dkr.ecr.your-region.amazonaws.com/dplb:latest
+docker tag Redis-Pro-Maxx:latest your-account-id.dkr.ecr.your-region.amazonaws.com/Redis-Pro-Maxx:latest
+docker push your-account-id.dkr.ecr.your-region.amazonaws.com/Redis-Pro-Maxx:latest
 ```
 
 3. **Deploy Using AWS ECS or Fargate:**
